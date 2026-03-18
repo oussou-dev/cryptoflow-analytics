@@ -1,0 +1,16 @@
+*.db
+*.db-wal
+*.db-shm
+.env
+.env.local
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+__pycache__/
+*.pyc
+.venv/
+venv/
+.bruin-cache/
