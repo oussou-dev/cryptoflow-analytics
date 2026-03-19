@@ -1,0 +1,36 @@
+coin_id,category,subcategory
+bitcoin,Store of Value,Digital Gold
+ethereum,Smart Contract Platform,Layer 1
+tether,Stablecoin,USD-Pegged
+binancecoin,Exchange Token,CEX
+solana,Smart Contract Platform,Layer 1
+ripple,Payments,Cross-Border
+usd-coin,Stablecoin,USD-Pegged
+cardano,Smart Contract Platform,Layer 1
+dogecoin,Meme,OG Meme
+tron,Smart Contract Platform,Layer 1
+avalanche-2,Smart Contract Platform,Layer 1
+chainlink,Oracle,Data Feed
+polkadot,Interoperability,Layer 0
+sui,Smart Contract Platform,Layer 1
+stellar,Payments,Cross-Border
+litecoin,Payments,Digital Silver
+uniswap,DeFi,DEX
+near,Smart Contract Platform,Layer 1
+aptos,Smart Contract Platform,Layer 1
+internet-computer,Smart Contract Platform,Layer 1
+arbitrum,Scaling,Layer 2
+optimism,Scaling,Layer 2
+polygon-ecosystem-token,Scaling,Layer 2
+filecoin,Storage,Decentralized Storage
+cosmos,Interoperability,Layer 0
+aave,DeFi,Lending
+maker,DeFi,Lending
+the-graph,Infrastructure,Indexing
+render-token,AI & Compute,GPU Network
+injective-protocol,DeFi,DEX
+stacks,Smart Contract Platform,Bitcoin L2
+dai,Stablecoin,Decentralized
+pepe,Meme,New Meme
+shiba-inu,Meme,Doge Fork
+bonk,Meme,Solana Meme
