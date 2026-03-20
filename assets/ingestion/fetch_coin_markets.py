@@ -242,6 +242,7 @@ custom_checks:
 import pandas as pd
 import requests
 from datetime import datetime, timezone
+import os
 
 
 def materialize():
