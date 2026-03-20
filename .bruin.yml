@@ -6,4 +6,3 @@ environments:
       duckdb:
         - name: "duckdb-default"
           path: "md:cryptoflow"
-          token: "{{ env.MOTHERDUCK_TOKEN }}"
