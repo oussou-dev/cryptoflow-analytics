@@ -122,10 +122,13 @@ custom_checks:
 import pandas as pd
 import requests
 from datetime import datetime, timezone
+import os
 
 
 def materialize():
-    """Fetch currently trending coins from CoinGecko API."""
+    """Fetch Top 7 Trending..."""
+    # Force the token into the environment for Bruin Cloud workers
+    os.environ["MOTHERDUCK_TOKEN"] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im91c3NvdS5kZXYAZ21haWwuY29tIiwibWRSZWdpb24iOiJhd3MtZXUtY2VudHJhbC0xIiwic2Vzc2lvbiI6Im91c3NvdS5kZXYuZ21haWwuY29tIiwicGF0IjoiaTRvQkNPSWVQRHpNUVJxdWVXcktmdFNpcXFTd1gzNHpyX3dxamlBNDBWcyIsInVzZXJJZCI6IjNjMDIxMmQ2LTA1NzctNDc4OC05YmEzLTYxZGVlZjg0OTQxMyIsImlzcyI6Im1kX3BhdCIsInJlYWRPbmx5IjpmYWxzZSwidG9rZW5UeXBlIjoicmVhZF93cml0ZSIsImlhdCI6MTc3NDAxNTA5MH0.3PT9baEZrETLZuBy9zgsEE1TSuYQloefYMqoMIuPemk"
 
     url = "https://api.coingecko.com/api/v3/search/trending"
     headers = {"accept": "application/json"}
