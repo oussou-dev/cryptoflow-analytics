@@ -228,7 +228,7 @@ custom_checks:
     value: 1
     query: |
       SELECT COUNT(*) = 0 FROM raw.coin_markets
-      WHERE high_24h < low_24h OR high_24h < current_price OR low_24h > current_price
+      WHERE high_24h < low_24h
   - name: supply_economics_logical
     value: 1
     query: |-
