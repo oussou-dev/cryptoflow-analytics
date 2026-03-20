@@ -1,31 +1,167 @@
 /* @bruin
+
 name: analytics.volatility_analysis
 type: duckdb.sql
+description: |
+  Comprehensive volatility analysis for the top 50 cryptocurrencies by market cap, calculating composite
+  volatility scores across multiple timeframes (24h, 7d, 30d) and intraday spreads. The analysis produces
+  five-tier volatility classifications from 'stable' to 'ultra_volatile' using a weighted scoring methodology.
+
+  The composite volatility score combines:
+  - Absolute 24-hour price changes (30% weight)
+  - Intraday high/low spreads (30% weight)
+  - Normalized 7-day price movements (20% weight)
+  - Normalized 30-day price movements (20% weight)
+
+  This table serves portfolio managers and traders for risk assessment, position sizing, and identifying
+  trading opportunities based on volatility characteristics. Volume activity levels provide additional
+  context for liquidity-adjusted volatility assessment.
+tags:
+  - domain:finance
+  - domain:crypto
+  - data_type:risk_metrics
+  - data_type:volatility_analysis
+  - pipeline_role:analytics
+  - update_pattern:daily_snapshot
+  - sensitivity:public
+  - use_case:risk_management
+  - use_case:portfolio_optimization
+  - use_case:trading_signals
+
 materialization:
-    type: table
+  type: table
+
 depends:
-    - stg.enriched_coins
+  - stg.enriched_coins
 
 columns:
-    - name: id
-      type: string
-      description: "CoinGecko coin identifier"
-      checks:
-        - name: not_null
-    - name: volatility_tier
-      type: string
-      description: "Volatility classification"
-      checks:
-        - name: not_null
-        - name: accepted_values
-          value: ["ultra_volatile", "high", "moderate", "low", "stable"]
+  - name: analysis_date
+    type: date
+    description: Date when the volatility analysis was performed (CURRENT_DATE)
+    checks:
+      - name: not_null
+  - name: id
+    type: string
+    description: CoinGecko unique identifier for the cryptocurrency
+    checks:
+      - name: not_null
+  - name: name
+    type: string
+    description: Full name of the cryptocurrency (e.g., 'Bitcoin', 'Ethereum')
+    checks:
+      - name: not_null
+  - name: symbol
+    type: string
+    description: Trading symbol/ticker of the cryptocurrency (e.g., 'BTC', 'ETH')
+    checks:
+      - name: not_null
+  - name: market_cap_rank
+    type: integer
+    description: Current ranking by market capitalization (limited to top 50 in analysis)
+    checks:
+      - name: not_null
+      - name: positive
+  - name: price_tier
+    type: string
+    description: Market capitalization tier classification (mega_cap, large_cap, etc.)
+    checks:
+      - name: not_null
+      - name: accepted_values
+        value:
+          - mega_cap
+          - large_cap
+          - mid_cap
+          - small_cap
+          - micro_cap
+  - name: current_price
+    type: float
+    description: Current price in USD at time of analysis
+    checks:
+      - name: not_null
+      - name: positive
+  - name: intraday_spread_pct
+    type: float
+    description: Intraday volatility measure calculated as (high_24h - low_24h) / low_24h * 100
+    checks:
+      - name: not_null
+  - name: abs_change_24h
+    type: float
+    description: Absolute value of 24-hour price change percentage (magnitude of movement)
+    checks:
+      - name: not_null
+  - name: abs_change_7d
+    type: float
+    description: Absolute value of 7-day price change percentage (magnitude of movement)
+    checks:
+      - name: not_null
+  - name: abs_change_30d
+    type: float
+    description: Absolute value of 30-day price change percentage (magnitude of movement)
+    checks:
+      - name: not_null
+  - name: volatility_score
+    type: float
+    description: Composite volatility metric combining multi-timeframe price movements with weighted averages
+    checks:
+      - name: not_null
+  - name: volatility_tier
+    type: string
+    description: Five-tier volatility classification based on composite scoring (>15=ultra_volatile, >8=high, >3=moderate, >1=low, <=1=stable)
+    checks:
+      - name: not_null
+      - name: accepted_values
+        value:
+          - ultra_volatile
+          - high
+          - moderate
+          - low
+          - stable
+  - name: distance_from_ath_pct
+    type: float
+    description: Percentage distance from all-time high (negative values indicate drawdown from peak)
+    checks:
+      - name: not_null
+  - name: volume_to_mcap_ratio
+    type: float
+    description: Liquidity indicator calculated as 24-hour trading volume divided by market capitalization
+    checks:
+      - name: not_null
+  - name: volume_activity_level
+    type: string
+    description: Categorical volume activity classification based on volume-to-market-cap ratios
+    checks:
+      - name: not_null
+      - name: accepted_values
+        value:
+          - abnormally_high
+          - elevated
+          - normal
+          - low
 
 custom_checks:
-    - name: "volatility_scores_not_negative"
-      query: |
-        SELECT COUNT(*) = 0 FROM analytics.volatility_analysis
-        WHERE volatility_score < 0
-      value: 1
+  - name: volatility_scores_not_negative
+    value: 1
+    query: |
+      SELECT COUNT(*) = 0 FROM analytics.volatility_analysis
+      WHERE volatility_score < 0
+  - name: top_50_coins_only
+    value: 1
+    query: |
+      SELECT COUNT(*) = 0 FROM analytics.volatility_analysis
+      WHERE market_cap_rank > 50
+  - name: volatility_tiers_logically_ordered
+    value: 1
+    query: |
+      SELECT COUNT(*) = 0 FROM analytics.volatility_analysis
+      WHERE (volatility_tier = 'ultra_volatile' AND volatility_score <= 15)
+         OR (volatility_tier = 'high' AND (volatility_score <= 8 OR volatility_score > 15))
+         OR (volatility_tier = 'moderate' AND (volatility_score <= 3 OR volatility_score > 8))
+         OR (volatility_tier = 'low' AND (volatility_score <= 1 OR volatility_score > 3))
+         OR (volatility_tier = 'stable' AND volatility_score > 1)
+  - name: daily_single_snapshot
+    value: 1
+    query: SELECT COUNT(DISTINCT analysis_date) = 1 FROM analytics.volatility_analysis
+
 @bruin */
 
 SELECT

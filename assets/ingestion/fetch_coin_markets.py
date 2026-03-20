@@ -1,60 +1,204 @@
 """@bruin
+
 name: raw.coin_markets
-type: python
+description: |
+  Primary cryptocurrency market data ingestion table containing real-time market metrics for the top 100
+  cryptocurrencies by market capitalization from CoinGecko API. This dataset serves as the foundation
+  for all downstream crypto analytics including market dominance analysis, momentum signals, and
+  volatility tracking.
+
+  Data is refreshed daily via API call and includes comprehensive market metrics: current pricing,
+  market capitalization, trading volumes, price performance across multiple timeframes (1h, 24h, 7d, 14d, 30d),
+  supply economics, and all-time high/low benchmarks. The dataset focuses on the most liquid and
+  established cryptocurrencies to ensure data quality and minimize manipulation effects.
+
+  Key transformations applied:
+  - Flattened JSON response from CoinGecko markets endpoint
+  - Added ingestion timestamp for audit trail
+  - Filtered to essential columns for downstream analytics
+  - API rate limiting and error handling implemented
+
+  Typical use cases:
+  - Market sentiment and momentum analysis
+  - Portfolio performance benchmarking
+  - Volatility and risk assessment
+  - Market dominance tracking
+  - Price prediction feature engineering
 connection: duckdb-default
+tags:
+  - domain:crypto_analytics
+  - data_source:coingecko_api
+  - sensitivity:public
+  - pipeline_role:raw
+  - update_pattern:daily
+  - refresh_type:full_replace
+  - record_count:100
+  - api_endpoint:coins_markets
+
 materialization:
-    type: table
+  type: table
+
+secrets:
+  - key: duckdb-default
+    inject_as: duckdb-default
 
 columns:
-    - name: id
-      type: string
-      description: "CoinGecko unique identifier"
-      checks:
-        - name: not_null
-        - name: unique
-    - name: symbol
-      type: string
-      description: "Coin ticker symbol (btc, eth...)"
-      checks:
-        - name: not_null
-    - name: current_price
-      type: float
-      description: "Current price in USD"
-      checks:
-        - name: not_null
-        - name: positive
-    - name: market_cap
-      type: float
-      description: "Market capitalization in USD"
-      checks:
-        - name: positive
-    - name: total_volume
-      type: float
-      description: "24h trading volume in USD"
-    - name: market_cap_rank
-      type: integer
-      description: "Rank by market cap"
-      checks:
-        - name: positive
-    - name: ingested_at
-      type: timestamp
-      description: "Ingestion timestamp (UTC)"
-      checks:
-        - name: not_null
+  - name: id
+    type: VARCHAR
+    description: CoinGecko unique identifier
+    checks:
+      - name: not_null
+      - name: unique
+  - name: symbol
+    type: VARCHAR
+    description: Coin ticker symbol (btc, eth...)
+    checks:
+      - name: not_null
+  - name: current_price
+    type: DOUBLE
+    description: Current price in USD
+    checks:
+      - name: not_null
+      - name: positive
+  - name: market_cap
+    type: BIGINT
+    description: Market capitalization in USD
+    checks:
+      - name: positive
+  - name: total_volume
+    type: DOUBLE
+    description: 24h trading volume in USD
+  - name: market_cap_rank
+    type: BIGINT
+    description: Rank by market cap
+    checks:
+      - name: positive
+  - name: ingested_at
+    type: TIMESTAMP
+    description: Ingestion timestamp (UTC)
+    checks:
+      - name: not_null
+  - name: name
+    type: VARCHAR
+    description: Full cryptocurrency name (e.g., "Bitcoin", "Ethereum")
+    checks:
+      - name: not_null
+  - name: fully_diluted_valuation
+    type: BIGINT
+    description: Market cap if max supply was in circulation (USD), theoretical maximum valuation
+    checks:
+      - name: positive
+  - name: high_24h
+    type: DOUBLE
+    description: Highest price reached in the last 24 hours (USD)
+    checks:
+      - name: positive
+  - name: low_24h
+    type: DOUBLE
+    description: Lowest price reached in the last 24 hours (USD)
+    checks:
+      - name: positive
+  - name: price_change_24h
+    type: DOUBLE
+    description: Absolute price change in USD over the last 24 hours (can be negative)
+  - name: price_change_percentage_24h
+    type: DOUBLE
+    description: Percentage price change over the last 24 hours (can be negative for losses)
+  - name: market_cap_change_24h
+    type: DOUBLE
+    description: Absolute market cap change in USD over the last 24 hours (can be negative)
+  - name: market_cap_change_percentage_24h
+    type: DOUBLE
+    description: Percentage market cap change over the last 24 hours (can be negative)
+  - name: circulating_supply
+    type: DOUBLE
+    description: Current number of coins/tokens in circulation and available for trading
+    checks:
+      - name: positive
+  - name: total_supply
+    type: DOUBLE
+    description: Total supply including locked/vested tokens but excluding burned tokens
+    checks:
+      - name: positive
+  - name: max_supply
+    type: DOUBLE
+    description: Maximum number of tokens that will ever exist (null for unlimited supply tokens)
+    checks:
+      - name: positive
+  - name: ath
+    type: DOUBLE
+    description: All-time high price in USD (historical maximum value ever reached)
+    checks:
+      - name: positive
+  - name: ath_change_percentage
+    type: DOUBLE
+    description: Percentage change from all-time high to current price (always negative unless at ATH)
+  - name: ath_date
+    type: VARCHAR
+    description: ISO 8601 timestamp when the all-time high was reached
+    checks:
+      - name: not_null
+  - name: atl
+    type: DOUBLE
+    description: All-time low price in USD (historical minimum value ever recorded)
+    checks:
+      - name: positive
+  - name: atl_change_percentage
+    type: DOUBLE
+    description: Percentage change from all-time low to current price (always positive unless at ATL)
+    checks:
+      - name: positive
+  - name: atl_date
+    type: VARCHAR
+    description: ISO 8601 timestamp when the all-time low was reached
+    checks:
+      - name: not_null
+  - name: price_change_percentage_1h_in_currency
+    type: DOUBLE
+    description: Percentage price change over the last 1 hour (short-term momentum indicator)
+  - name: price_change_percentage_7d_in_currency
+    type: DOUBLE
+    description: Percentage price change over the last 7 days (weekly trend indicator)
+  - name: price_change_percentage_14d_in_currency
+    type: DOUBLE
+    description: Percentage price change over the last 14 days (bi-weekly trend indicator)
+  - name: price_change_percentage_30d_in_currency
+    type: DOUBLE
+    description: Percentage price change over the last 30 days (monthly trend indicator)
+  - name: last_updated
+    type: VARCHAR
+    description: ISO 8601 timestamp of when CoinGecko last updated this coin's data
+    checks:
+      - name: not_null
 
 custom_checks:
-    - name: "at_least_50_coins_ingested"
-      query: |
-        SELECT COUNT(*) >= 50 FROM raw.coin_markets
-      value: 1
-    - name: "bitcoin_exists_in_data"
-      query: |
-        SELECT COUNT(*) > 0 FROM raw.coin_markets WHERE id = 'bitcoin'
-      value: 1
-    - name: "no_negative_market_caps"
-      query: |
-        SELECT COUNT(*) = 0 FROM raw.coin_markets WHERE market_cap < 0
-      value: 1
+  - name: at_least_50_coins_ingested
+    value: 1
+    query: |
+      SELECT COUNT(*) >= 50 FROM raw.coin_markets
+  - name: bitcoin_exists_in_data
+    value: 1
+    query: |
+      SELECT COUNT(*) > 0 FROM raw.coin_markets WHERE id = 'bitcoin'
+  - name: no_negative_market_caps
+    value: 1
+    query: |
+      SELECT COUNT(*) = 0 FROM raw.coin_markets WHERE market_cap < 0
+  - name: top_10_coins_present
+    value: 1
+    query: |
+      SELECT COUNT(*) >= 10 FROM raw.coin_markets WHERE market_cap_rank <= 10
+  - name: fresh_data_within_24h
+    value: 1
+    query: |
+      SELECT COUNT(*) > 0 FROM raw.coin_markets
+      WHERE last_updated >= datetime('now', '-1 day')
+  - name: reasonable_price_ranges
+    value: 1
+    query: |
+      SELECT COUNT(*) = 0 FROM raw.coin_markets
+      WHERE current_price > 1000000 OR current_price <= 0
+
 @bruin"""
 
 import pandas as pd

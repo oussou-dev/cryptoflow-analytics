@@ -1,32 +1,145 @@
 /* @bruin
+
 name: analytics.market_regime
 type: duckdb.sql
+description: |
+  Real-time cryptocurrency market regime detector that analyzes market breadth, sentiment, and global metrics
+  to classify overall market conditions. Combines analysis of top 50 coins' price movements across multiple
+  timeframes (24h, 7d, 30d) with Fear & Greed Index sentiment to produce a single regime classification.
+
+  The regime score is calculated using weighted market breadth (percentage of coins trending upward) and
+  sentiment indicators, resulting in five distinct market states from STRONG_BEAR to STRONG_BULL. This
+  single-row table serves as a foundational signal for portfolio allocation and risk management strategies.
+tags:
+  - domain:finance
+  - domain:crypto
+  - data_type:market_intelligence
+  - data_type:sentiment_analysis
+  - pipeline_role:analytics
+  - update_pattern:daily_snapshot
+  - sensitivity:public
+  - use_case:risk_management
+  - use_case:portfolio_allocation
+
 materialization:
-    type: table
+  type: table
+
 depends:
-    - stg.enriched_coins
-    - stg.fear_greed_daily
-    - stg.global_metrics
+  - stg.enriched_coins
+  - stg.fear_greed_daily
+  - stg.global_metrics
 
 columns:
-    - name: regime
-      type: string
-      description: "Current market regime classification"
-      checks:
-        - name: not_null
-        - name: accepted_values
-          value: ["STRONG_BULL", "BULL", "NEUTRAL", "BEAR", "STRONG_BEAR"]
-    - name: regime_score
-      type: float
-      description: "Composite score driving regime classification (-100 to +100)"
-      checks:
-        - name: not_null
+  - name: analysis_date
+    type: date
+    description: Date when the regime analysis was performed (CURRENT_DATE)
+    checks:
+      - name: not_null
+  - name: regime
+    type: string
+    description: Current market regime classification based on composite scoring of breadth and sentiment
+    checks:
+      - name: not_null
+      - name: accepted_values
+        value:
+          - STRONG_BULL
+          - BULL
+          - NEUTRAL
+          - BEAR
+          - STRONG_BEAR
+  - name: regime_score
+    type: float
+    description: Composite score driving regime classification, ranges from -100 (extreme bearish) to +100 (extreme bullish)
+    checks:
+      - name: not_null
+  - name: coins_analyzed
+    type: integer
+    description: Number of coins included in the breadth analysis (typically top 50 by market cap)
+    checks:
+      - name: not_null
+  - name: pct_up_24h
+    type: float
+    description: Percentage of analyzed coins with positive 24-hour price change
+    checks:
+      - name: not_null
+  - name: pct_up_7d
+    type: float
+    description: Percentage of analyzed coins with positive 7-day price change
+    checks:
+      - name: not_null
+  - name: pct_up_30d
+    type: float
+    description: Percentage of analyzed coins with positive 30-day price change
+    checks:
+      - name: not_null
+  - name: avg_change_24h
+    type: float
+    description: Average 24-hour price change percentage across analyzed coins
+    checks:
+      - name: not_null
+  - name: avg_change_7d
+    type: float
+    description: Average 7-day price change percentage across analyzed coins
+    checks:
+      - name: not_null
+  - name: avg_change_30d
+    type: float
+    description: Average 30-day price change percentage across analyzed coins
+    checks:
+      - name: not_null
+  - name: fear_greed_current
+    type: integer
+    description: Current Fear & Greed Index value (0-100, where 0=extreme fear, 100=extreme greed)
+    checks:
+      - name: not_null
+  - name: fear_greed_ma_7d
+    type: float
+    description: 7-day moving average of Fear & Greed Index, smoothing short-term sentiment volatility
+    checks:
+      - name: not_null
+  - name: sentiment_zone
+    type: string
+    description: Categorical sentiment classification based on Fear & Greed Index
+    checks:
+      - name: not_null
+      - name: accepted_values
+        value:
+          - extreme_fear
+          - fear
+          - neutral
+          - greed
+          - extreme_greed
+  - name: market_cap_change_24h_pct
+    type: float
+    description: 24-hour percentage change in total cryptocurrency market capitalization
+    checks:
+      - name: not_null
+  - name: btc_dominance
+    type: float
+    description: Bitcoin's percentage share of total crypto market capitalization
+    checks:
+      - name: not_null
+  - name: altcoin_dominance
+    type: float
+    description: Combined market share of all cryptocurrencies excluding Bitcoin and Ethereum
+    checks:
+      - name: not_null
+  - name: avg_volume_ratio
+    type: float
+    description: Average volume-to-market-cap ratio across analyzed coins (liquidity indicator)
+    checks:
+      - name: not_null
+  - name: regime_narrative
+    type: string
+    description: Human-readable explanation of current market conditions and regime classification
+    checks:
+      - name: not_null
 
 custom_checks:
-    - name: "exactly_one_regime_row"
-      query: |
-        SELECT COUNT(*) = 1 FROM analytics.market_regime
-      value: 1
+  - name: exactly_one_regime_row
+    value: 1
+    query: SELECT COUNT(*) = 1 FROM analytics.market_regime
+
 @bruin */
 
 WITH market_breadth AS (

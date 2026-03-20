@@ -14,3 +14,7 @@ __pycache__/
 .venv/
 venv/
 .bruin-cache/
+.bruin.yml
+logs/runs
+logs/*.log
+*.py[cod]

@@ -1,43 +1,150 @@
 /* @bruin
+
 name: analytics.momentum_signals
 type: duckdb.sql
+description: |
+  Multi-timeframe momentum analysis with sentiment-enhanced trading signals for top 50 cryptocurrencies. Combines technical momentum indicators (24h/7d/30d price changes) with volume confirmation, ATH proximity analysis, and contrarian sentiment signals from Fear & Greed Index. Generates actionable buy/sell signals with confidence levels for systematic trading strategies. The momentum score ranges from -50 (strong bearish) to +100 (strong bullish), incorporating short-term momentum weighting, volume confirmation, and trend strength indicators. Contrarian approach: high momentum during extreme fear periods generates strongest buy signals.
+tags:
+  - domain:crypto
+  - type:ml_feature
+  - sensitivity:public
+  - pipeline_role:mart
+  - update_pattern:daily
+  - usage:trading_signals
+  - audience:quant_analysts
+
 materialization:
-    type: table
+  type: table
+
 depends:
-    - stg.enriched_coins
-    - stg.fear_greed_daily
+  - stg.enriched_coins
+  - stg.fear_greed_daily
 
 columns:
-    - name: id
-      type: string
-      description: "CoinGecko coin identifier"
-      checks:
-        - name: not_null
-    - name: momentum_score
-      type: float
-      description: "Composite momentum score (-50 to +100)"
-      checks:
-        - name: not_null
-    - name: signal
-      type: string
-      description: "Trading signal derived from momentum + sentiment"
-      checks:
-        - name: not_null
-        - name: accepted_values
-          value: ["STRONG_BUY", "BUY", "NEUTRAL", "SELL", "STRONG_SELL"]
-    - name: signal_confidence
-      type: string
-      description: "Confidence level of the signal"
-      checks:
-        - name: not_null
-        - name: accepted_values
-          value: ["HIGH", "MEDIUM", "LOW"]
+  - name: analysis_date
+    type: date
+    description: Date when the analysis was performed (snapshot date)
+    checks:
+      - name: not_null
+  - name: id
+    type: string
+    description: CoinGecko unique coin identifier (primary key)
+    checks:
+      - name: not_null
+      - name: unique
+  - name: name
+    type: string
+    description: Human-readable cryptocurrency name (e.g., "Bitcoin")
+    checks:
+      - name: not_null
+  - name: symbol
+    type: string
+    description: Trading symbol/ticker (e.g., "BTC")
+    checks:
+      - name: not_null
+  - name: current_price
+    type: float
+    description: Current USD price at analysis time
+    checks:
+      - name: not_null
+      - name: positive
+  - name: market_cap_rank
+    type: integer
+    description: CoinGecko market capitalization ranking (1-50 for this dataset)
+    checks:
+      - name: not_null
+      - name: positive
+  - name: price_tier
+    type: string
+    description: Market cap tier classification (mega_cap, large_cap, mid_cap, small_cap, micro_cap)
+    checks:
+      - name: not_null
+      - name: accepted_values
+        value:
+          - mega_cap
+          - large_cap
+          - mid_cap
+          - small_cap
+          - micro_cap
+  - name: price_change_pct_24h
+    type: float
+    description: 24-hour price change percentage (short-term momentum component)
+  - name: price_change_pct_7d
+    type: float
+    description: 7-day price change percentage (medium-term momentum component)
+  - name: price_change_pct_30d
+    type: float
+    description: 30-day price change percentage (long-term momentum component)
+  - name: volume_to_mcap_ratio
+    type: float
+    description: 24h trading volume divided by market cap (liquidity/interest indicator)
+    checks:
+      - name: positive
+  - name: distance_from_ath_pct
+    type: float
+    description: Percentage distance from all-time high (negative values indicate drawdown)
+  - name: momentum_score
+    type: float
+    description: |
+      Composite momentum score ranging from -50 (strong bearish) to +100 (strong bullish). Weighted combination of: 24h momentum (max 20pts), 7d momentum (max 25pts), 30d momentum (max 25pts), volume confirmation (max 15pts), ATH proximity (max 15pts)
+    checks:
+      - name: not_null
+  - name: fear_greed_index
+    type: integer
+    description: Latest Fear & Greed Index value (0-100, lower values indicate market fear)
+    checks:
+      - name: not_null
+  - name: market_sentiment
+    type: string
+    description: Market sentiment classification based on Fear & Greed Index
+    checks:
+      - name: not_null
+  - name: signal
+    type: string
+    description: |
+      Contrarian trading signal combining momentum and sentiment. STRONG_BUY: high momentum (≥60) + extreme fear (<30). BUY: strong momentum (≥40). NEUTRAL: moderate momentum (≥-10). SELL/STRONG_SELL: negative momentum with graduated thresholds
+    checks:
+      - name: not_null
+      - name: accepted_values
+        value:
+          - STRONG_BUY
+          - BUY
+          - NEUTRAL
+          - SELL
+          - STRONG_SELL
+  - name: signal_confidence
+    type: string
+    description: |
+      Signal strength based on absolute momentum score magnitude. HIGH: |momentum_score| > 50, MEDIUM: > 25, LOW: ≤ 25
+    checks:
+      - name: not_null
+      - name: accepted_values
+        value:
+          - HIGH
+          - MEDIUM
+          - LOW
 
 custom_checks:
-    - name: "all_top50_coins_have_signals"
-      query: |
-        SELECT COUNT(*) >= 40 FROM analytics.momentum_signals
-      value: 1
+  - name: all_top50_coins_have_signals
+    value: 1
+    query: |
+      SELECT COUNT(*) >= 40 FROM analytics.momentum_signals
+  - name: momentum_score_within_expected_range
+    value: 1
+    query: |
+      SELECT COUNT(*) = 0 FROM analytics.momentum_signals
+      WHERE momentum_score < -60 OR momentum_score > 110
+  - name: strong_buy_signals_have_high_confidence
+    value: 1
+    query: |
+      SELECT COUNT(*) = 0 FROM analytics.momentum_signals
+      WHERE signal = 'STRONG_BUY' AND signal_confidence = 'LOW'
+  - name: fear_greed_index_in_valid_range
+    value: 1
+    query: |-
+      SELECT COUNT(*) = 0 FROM analytics.momentum_signals
+      WHERE fear_greed_index < 0 OR fear_greed_index > 100
+
 @bruin */
 
 WITH price_momentum AS (
