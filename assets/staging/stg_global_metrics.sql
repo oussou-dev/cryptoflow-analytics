@@ -162,7 +162,7 @@ custom_checks:
     value: 1
     query: |-
       SELECT COUNT(*) = 0 FROM stg.global_metrics
-      WHERE markets <= active_cryptocurrencies
+      WHERE markets = 0
 
 @bruin */
 

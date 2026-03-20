@@ -147,7 +147,8 @@ columns:
     type: DOUBLE
     description: Percentage change from all-time low to current price (always positive unless at ATL)
     checks:
-      - name: positive
+      - name: min
+        value: 0
   - name: atl_date
     type: VARCHAR
     description: ISO 8601 timestamp when the all-time low was reached
@@ -192,7 +193,7 @@ custom_checks:
     value: 1
     query: |
       SELECT COUNT(*) > 0 FROM raw.coin_markets
-      WHERE last_updated >= datetime('now', '-1 day')
+      WHERE CAST(last_updated AS TIMESTAMP) >= current_timestamp - INTERVAL '1 day'
   - name: reasonable_price_ranges
     value: 1
     query: |

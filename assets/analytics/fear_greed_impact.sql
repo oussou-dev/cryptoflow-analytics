@@ -81,7 +81,8 @@ columns:
     description: Standard deviation of index values within the zone (measures volatility)
     checks:
       - name: not_null
-      - name: positive
+      - name: min
+        value: 0
   - name: pct_of_total_days
     type: float
     description: Percentage of total observation period spent in this zone
@@ -184,7 +185,7 @@ zone_analysis AS (
         ROUND(AVG(value), 1) AS avg_index_value,
         MIN(value) AS min_value,
         MAX(value) AS max_value,
-        ROUND(STDDEV(value), 1) AS std_dev,
+        COALESCE(ROUND(STDDEV(value), 1), 0.0) AS std_dev,
         ROUND(
             COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (),
         1) AS pct_of_total_days

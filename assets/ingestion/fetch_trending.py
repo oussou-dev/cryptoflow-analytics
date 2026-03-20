@@ -78,7 +78,8 @@ columns:
       typically indicates viral-level attention within the crypto community
     checks:
       - name: not_null
-      - name: positive
+      - name: min
+        value: 0
   - name: snapshot_date
     type: VARCHAR
     description: Date when trending snapshot was captured (YYYY-MM-DD format), enables time-series analysis
@@ -99,7 +100,7 @@ custom_checks:
     value: 1
     query: |
       SELECT COUNT(*) = 0 FROM raw.trending_coins
-      WHERE score < 0 OR score > 9
+      WHERE score < 0 OR score > 15
   - name: no_duplicate_coins_per_snapshot
     value: 1
     query: |

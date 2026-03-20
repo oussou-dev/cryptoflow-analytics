@@ -18,3 +18,5 @@ venv/
 logs/runs
 logs/*.log
 *.py[cod]
+
+bruin-cloud-deployment-workflow.md

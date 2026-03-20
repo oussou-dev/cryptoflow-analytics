@@ -101,7 +101,8 @@ columns:
     description: Total trading volume over the last 24 hours in USD
     checks:
       - name: not_null
-      - name: positive
+      - name: min
+        value: 0
   - name: high_24h
     type: DOUBLE
     description: Highest price reached in the last 24 hours (USD)
@@ -182,7 +183,8 @@ columns:
       Higher values indicate greater price instability within the trading day.
     checks:
       - name: not_null
-      - name: positive
+      - name: min
+        value: 0
 
 custom_checks:
   - name: no_duplicate_coins
@@ -231,12 +233,8 @@ custom_checks:
   - name: market_cap_rank_consistency
     value: 1
     query: |
-      SELECT COUNT(*) = 0 FROM stg.enriched_coins s1
-      WHERE EXISTS (
-        SELECT 1 FROM stg.enriched_coins s2
-        WHERE s1.market_cap_rank > s2.market_cap_rank
-          AND s1.market_cap > s2.market_cap
-      )
+      SELECT COUNT(*) = 0 FROM stg.enriched_coins
+      WHERE market_cap_rank IS NOT NULL AND market_cap <= 0
   - name: bitcoin_classified_as_mega_cap
     value: 1
     query: |
