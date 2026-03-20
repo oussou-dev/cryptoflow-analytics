@@ -6,12 +6,26 @@ description: |
   Multi-timeframe momentum analysis with sentiment-enhanced trading signals for top 50 cryptocurrencies. Combines technical momentum indicators (24h/7d/30d price changes) with volume confirmation, ATH proximity analysis, and contrarian sentiment signals from Fear & Greed Index. Generates actionable buy/sell signals with confidence levels for systematic trading strategies. The momentum score ranges from -50 (strong bearish) to +100 (strong bullish), incorporating short-term momentum weighting, volume confirmation, and trend strength indicators. Contrarian approach: high momentum during extreme fear periods generates strongest buy signals.
 tags:
   - domain:crypto
-  - type:ml_feature
+  - domain:finance
+  - data_type:ml_feature
+  - data_type:trading_signals
+  - data_type:momentum_analysis
   - sensitivity:public
   - pipeline_role:mart
+  - pipeline_role:analytical_output
   - update_pattern:daily
+  - update_pattern:snapshot
+  - refresh_cadence:daily_morning
   - usage:trading_signals
+  - usage:risk_assessment
+  - usage:portfolio_optimization
   - audience:quant_analysts
+  - audience:portfolio_managers
+  - audience:trading_algorithms
+  - performance:fast_query
+  - record_count:50
+  - data_quality:high
+  - contrarian_strategy:sentiment_based
 
 materialization:
   type: table
@@ -54,6 +68,10 @@ columns:
     checks:
       - name: not_null
       - name: positive
+      - name: min
+        value: 1
+      - name: max
+        value: 50
   - name: price_tier
     type: string
     description: Market cap tier classification (mega_cap, large_cap, mid_cap, small_cap, micro_cap)
@@ -77,28 +95,45 @@ columns:
     description: 30-day price change percentage (long-term momentum component)
   - name: volume_to_mcap_ratio
     type: float
-    description: 24h trading volume divided by market cap (liquidity/interest indicator)
+    description: 24h trading volume divided by market cap (liquidity/interest indicator). Higher ratios indicate more active trading relative to market size. Typical range 0.01-3.0, with values >1.0 suggesting high speculative interest.
     checks:
       - name: positive
+      - name: max
+        value: 10
   - name: distance_from_ath_pct
     type: float
     description: Percentage distance from all-time high (negative values indicate drawdown)
   - name: momentum_score
     type: float
     description: |
-      Composite momentum score ranging from -50 (strong bearish) to +100 (strong bullish). Weighted combination of: 24h momentum (max 20pts), 7d momentum (max 25pts), 30d momentum (max 25pts), volume confirmation (max 15pts), ATH proximity (max 15pts)
+      Composite momentum score ranging from -50 (strong bearish) to +100 (strong bullish). Weighted combination of: 24h momentum (max 20pts), 7d momentum (max 25pts), 30d momentum (max 25pts), volume confirmation (max 15pts), ATH proximity (max 15pts). Extreme values below -60 or above +110 indicate calculation anomalies.
     checks:
       - name: not_null
+      - name: min
+        value: -60
+      - name: max
+        value: 110
   - name: fear_greed_index
     type: integer
-    description: Latest Fear & Greed Index value (0-100, lower values indicate market fear)
+    description: Latest Fear & Greed Index value (0-100, lower values indicate market fear). Sourced from alternative.me API and used as contrarian sentiment signal.
     checks:
       - name: not_null
+      - name: min
+        value: 0
+      - name: max
+        value: 100
   - name: market_sentiment
     type: string
-    description: Market sentiment classification based on Fear & Greed Index
+    description: Market sentiment classification based on Fear & Greed Index (Extreme Fear, Fear, Neutral, Greed, Extreme Greed). Inherited from stg.fear_greed_daily.classification. Used as contrarian indicator in signal generation logic.
     checks:
       - name: not_null
+      - name: accepted_values
+        value:
+          - Extreme Fear
+          - Fear
+          - Neutral
+          - Greed
+          - Extreme Greed
   - name: signal
     type: string
     description: |
@@ -144,6 +179,30 @@ custom_checks:
     query: |-
       SELECT COUNT(*) = 0 FROM analytics.momentum_signals
       WHERE fear_greed_index < 0 OR fear_greed_index > 100
+  - name: volume_ratios_reasonable
+    value: 1
+    query: |
+      SELECT COUNT(*) = 0 FROM analytics.momentum_signals
+      WHERE volume_to_mcap_ratio < 0 OR volume_to_mcap_ratio > 10
+  - name: signal_distribution_reasonable
+    value: 1
+    query: |
+      SELECT COUNT(*) >= 2 FROM (
+        SELECT signal, COUNT(*) as cnt
+        FROM analytics.momentum_signals
+        GROUP BY signal
+      ) WHERE cnt > 0
+  - name: strong_buy_only_during_fear
+    value: 1
+    query: |
+      SELECT COUNT(*) = 0 FROM analytics.momentum_signals
+      WHERE signal = 'STRONG_BUY'
+        AND market_sentiment NOT IN ('Extreme Fear', 'Fear')
+  - name: price_changes_correlation_check
+    value: 1
+    query: |-
+      SELECT COUNT(*) = 0 FROM analytics.momentum_signals
+      WHERE price_change_pct_24h > 50 AND momentum_score < 0
 
 @bruin */
 

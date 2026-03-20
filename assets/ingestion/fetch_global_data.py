@@ -12,6 +12,14 @@ description: |
   layer (stg.global_metrics) where additional calculated fields like altcoin dominance and volume ratios
   are derived.
 
+  Operational characteristics:
+  - API endpoint: https://api.coingecko.com/api/v3/global (public, no auth required)
+  - Rate limits: 10-30 calls/minute for free tier, sufficient for daily ingestion
+  - Response time: Typically <2 seconds, with 30-second timeout configured
+  - Data freshness: CoinGecko updates approximately every 5-10 minutes
+  - Historical availability: Limited to current snapshot only, no historical data via this endpoint
+  - Failure handling: Request timeout and HTTP error status raise exceptions
+
   Key usage: Essential input for market regime classification, dominance trend analysis, and global market
   health monitoring. Downstream consumers include analytics.market_regime and analytics.market_dominance.
 connection: duckdb-default
@@ -20,12 +28,19 @@ tags:
   - domain:crypto
   - data_type:external_source
   - data_type:market_data
+  - data_type:api_endpoint
   - pipeline_role:raw
   - update_pattern:daily_snapshot
   - sensitivity:public
   - source:coingecko_api
   - use_case:market_analysis
   - use_case:regime_detection
+  - use_case:dominance_tracking
+  - api_pattern:rest_endpoint
+  - refresh_cadence:daily
+  - data_latency:near_realtime
+  - business_critical:high
+  - operational_tier:foundational
 
 materialization:
   type: table
@@ -53,6 +68,8 @@ columns:
     checks:
       - name: not_null
       - name: positive
+      - name: max
+        value: 100
   - name: eth_dominance
     type: DOUBLE
     description: |
@@ -62,6 +79,8 @@ columns:
     checks:
       - name: not_null
       - name: positive
+      - name: max
+        value: 100
   - name: snapshot_date
     type: VARCHAR
     description: |
@@ -134,6 +153,12 @@ custom_checks:
     query: |-
       SELECT COUNT(*) = 0 FROM raw.global_market
       WHERE snapshot_date !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+  - name: ingestion_timestamp_reasonable
+    value: 1
+    query: |-
+      SELECT COUNT(*) = 0 FROM raw.global_market
+      WHERE ingested_at > CURRENT_TIMESTAMP
+        OR ingested_at < CURRENT_TIMESTAMP - INTERVAL '7 days'
 
 @bruin"""
 

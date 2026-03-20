@@ -15,12 +15,20 @@ description: |
   trend analysis. This is commonly used for contrarian trading signals and market timing analysis.
 
   Refreshes daily with the full historical dataset and includes current market position indicators.
+
+  Operational characteristics: This analytical mart contains exactly 5 rows (one per sentiment zone)
+  making it highly performant for dashboard queries. The daily refresh processes the complete
+  historical dataset but produces a compact summary table ideal for real-time applications.
 tags:
   - domain:finance
+  - domain:crypto
   - data_type:analytics_mart
   - sentiment:fear_greed
   - update_pattern:daily_snapshot
+  - sensitivity:public
   - use_case:market_timing
+  - use_case:contrarian_trading
+  - use_case:risk_management
 
 materialization:
   type: table
@@ -64,18 +72,24 @@ columns:
     checks:
       - name: not_null
       - name: positive
+      - name: max
+        value: 100
   - name: min_value
     type: integer
     description: Lowest index value recorded in this sentiment zone
     checks:
       - name: not_null
       - name: positive
+      - name: max
+        value: 100
   - name: max_value
     type: integer
     description: Highest index value recorded in this sentiment zone
     checks:
       - name: not_null
       - name: positive
+      - name: max
+        value: 100
   - name: std_dev
     type: float
     description: Standard deviation of index values within the zone (measures volatility)
@@ -89,12 +103,16 @@ columns:
     checks:
       - name: not_null
       - name: positive
+      - name: max
+        value: 100
   - name: current_value
     type: integer
     description: Most recent Fear & Greed Index reading
     checks:
       - name: not_null
       - name: positive
+      - name: max
+        value: 100
   - name: current_zone
     type: string
     description: Current market sentiment zone based on latest index value
@@ -113,6 +131,8 @@ columns:
     checks:
       - name: not_null
       - name: positive
+      - name: max
+        value: 100
   - name: current_trend
     type: string
     description: |

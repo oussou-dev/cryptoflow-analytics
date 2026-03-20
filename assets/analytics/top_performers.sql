@@ -17,14 +17,32 @@ description: |
 
   Filters to top 100 coins by market cap to focus on liquid, established assets and exclude low-cap manipulation.
   Each coin can appear in multiple categories if it performs strongly across different timeframes.
+
+  Operational characteristics:
+  - Expected output: Exactly 60 rows per execution (6 categories × 10 performers each)
+  - Data freshness: Reflects price changes as of CoinGecko's last_updated timestamp
+  - Execution time: < 5 seconds for typical workload (analyzing 100 coins across 3 timeframes)
+  - Dependencies: Requires stg.enriched_coins to contain valid market data for top 100 coins by market cap
+  - Performance: Optimized with efficient ROW_NUMBER() ranking and minimal data scanning
 tags:
   - domain:crypto_analytics
+  - domain:finance
   - type:fact_table
+  - data_type:market_intelligence
+  - data_type:performance_metrics
   - pipeline_role:mart
   - update_pattern:daily_snapshot
+  - refresh_cadence:24h
   - use_case:market_monitoring
   - use_case:momentum_analysis
+  - use_case:trading_signals
+  - use_case:portfolio_rebalancing
+  - use_case:market_alerts
   - sensitivity:public
+  - data_source:coingecko_api
+  - record_count:60
+  - quality_tier:high
+  - cardinality:medium
 
 materialization:
   type: table
@@ -89,7 +107,10 @@ columns:
           - 30d
   - name: change_pct
     type: float
-    description: Price change percentage over the specified timeframe (rounded to 2 decimal places)
+    description: |
+      Price change percentage over the specified timeframe (rounded to 2 decimal places).
+      Positive values indicate price increases (gainers), negative values indicate decreases (losers).
+      Values can range dramatically during volatile periods, with extreme outliers possible during market stress.
     checks:
       - name: not_null
   - name: performance_category
@@ -107,7 +128,11 @@ columns:
           - top_loser_30d
   - name: rank_in_category
     type: integer
-    description: Ranking within the performance category (1-10, where 1 = highest gain/loss)
+    description: |
+      Ranking within the performance category (1-10, where 1 = highest gain/loss).
+      This rank is derived using ROW_NUMBER() within each category, ensuring no ties.
+      For gainer categories: rank 1 = highest positive change_pct
+      For loser categories: rank 1 = most negative change_pct
     checks:
       - name: not_null
       - name: positive
@@ -133,6 +158,46 @@ custom_checks:
       SELECT COUNT(*) = 0
       FROM analytics.top_performers
       WHERE market_cap_rank > 100
+  - name: ranks_within_expected_range
+    value: 1
+    query: |
+      SELECT COUNT(*) = 0
+      FROM analytics.top_performers
+      WHERE rank_in_category < 1 OR rank_in_category > 10
+  - name: gainers_have_positive_changes
+    value: 1
+    query: |
+      SELECT COUNT(*) = 0
+      FROM analytics.top_performers
+      WHERE performance_category LIKE '%gainer%' AND change_pct <= 0
+  - name: losers_have_negative_changes
+    value: 1
+    query: |
+      SELECT COUNT(*) = 0
+      FROM analytics.top_performers
+      WHERE performance_category LIKE '%loser%' AND change_pct >= 0
+  - name: rank1_is_most_extreme_performer
+    value: 1
+    query: |
+      WITH category_extremes AS (
+        SELECT performance_category,
+               MAX(ABS(change_pct)) AS max_abs_change,
+               MAX(CASE WHEN rank_in_category = 1 THEN ABS(change_pct) END) AS rank1_abs_change
+        FROM analytics.top_performers
+        GROUP BY performance_category
+      )
+      SELECT COUNT(*) = 0
+      FROM category_extremes
+      WHERE max_abs_change != rank1_abs_change
+  - name: no_duplicate_coins_per_category
+    value: 1
+    query: |-
+      SELECT COUNT(*) = 0 FROM (
+        SELECT performance_category, id, COUNT(*) as cnt
+        FROM analytics.top_performers
+        GROUP BY performance_category, id
+        HAVING cnt > 1
+      )
 
 @bruin */
 

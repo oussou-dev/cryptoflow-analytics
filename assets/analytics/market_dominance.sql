@@ -3,18 +3,44 @@
 name: analytics.market_dominance
 type: duckdb.sql
 description: |
-  Cryptocurrency market dominance analysis showing each coin's market share percentage
-  and aggregated tier-level dominance. Used for competitive landscape analysis, market
-  concentration monitoring, and portfolio diversification insights. Includes both
-  individual coin dominance and price tier aggregations to identify market leaders
-  across different market cap segments.
+  Cryptocurrency market dominance analysis providing comprehensive competitive intelligence through individual coin
+  market share calculations and aggregated tier-level dominance metrics. This table transforms enriched market data
+  into actionable dominance insights for investment strategy, risk assessment, and market structure analysis.
+
+  Key analytical features:
+  - Individual coin dominance percentages calculated against total market capitalization
+  - Market capitalization rankings with tier-based groupings (mega/large/mid/small/micro cap)
+  - Tier-level dominance aggregations revealing market concentration patterns
+  - Daily snapshots enabling trend analysis and regime detection
+
+  Primary use cases:
+  - Competitive landscape monitoring and market share tracking
+  - Portfolio diversification analysis across market cap segments
+  - Market concentration risk assessment for regulatory and investment purposes
+  - Identifying emerging leaders and market structure shifts over time
+  - Input data for regime detection algorithms and allocation models
+
+  Data characteristics:
+  - Daily refresh aligns with upstream staging layer updates
+  - Dominance percentages sum to ~100% with minimal rounding variance
+  - Covers top cryptocurrencies by market cap with active trading data
+  - Bitcoin dominance typically ranges 35-70% depending on market cycle
 tags:
-  - finance
-  - market_analysis
-  - fact_table
-  - daily
-  - competitive_intelligence
-  - portfolio_analytics
+  - domain:finance
+  - domain:crypto
+  - data_type:fact_table
+  - data_type:market_intelligence
+  - data_type:competitive_analysis
+  - pipeline_role:analytics
+  - update_pattern:daily_snapshot
+  - sensitivity:public
+  - source:coingecko_derived
+  - use_case:competitive_intelligence
+  - use_case:portfolio_analytics
+  - use_case:market_concentration
+  - use_case:regime_detection
+  - contains:dominance_metrics
+  - contains:tier_aggregations
 
 materialization:
   type: table
@@ -53,13 +79,19 @@ columns:
       - name: positive
   - name: dominance_pct
     type: float
-    description: Individual coin market share percentage (0-100), calculated as coin_mcap / total_mcap * 100
+    description: |
+      Individual coin market share percentage (0-100), calculated as coin_mcap / total_mcap * 100.
+      Bitcoin typically ranges 35-70%, Ethereum 8-25%, with most altcoins <1%.
+      Key metric for competitive positioning and market influence assessment.
     checks:
       - name: not_null
       - name: positive
   - name: rank_by_mcap
     type: integer
-    description: Market capitalization ranking, 1 = largest market cap
+    description: |
+      Market capitalization ranking where 1 = highest market cap (typically Bitcoin).
+      Provides ordinal positioning for competitive analysis and tier boundary identification.
+      Typically covers top 50-100 actively traded cryptocurrencies.
     checks:
       - name: not_null
       - name: positive
@@ -77,7 +109,10 @@ columns:
           - micro_cap
   - name: tier_dominance_pct
     type: float
-    description: Combined market share percentage for the entire price tier
+    description: |
+      Combined market share percentage for the entire price tier (0-100).
+      Mega-cap typically dominates 70-90%, revealing market concentration patterns.
+      Used for diversification analysis and identifying tier rotation trends.
     checks:
       - name: not_null
       - name: positive
@@ -104,6 +139,11 @@ custom_checks:
     query: |-
       SELECT COUNT(*) = 0 FROM analytics.market_dominance
       WHERE tier_dominance_pct > 100 OR tier_dominance_pct < 0
+  - name: mega_cap_tier_dominance_realistic
+    value: 1
+    query: |-
+      SELECT COUNT(*) = 0 FROM analytics.market_dominance
+      WHERE price_tier = 'mega_cap' AND (tier_dominance_pct < 50 OR tier_dominance_pct > 95)
 
 @bruin */
 

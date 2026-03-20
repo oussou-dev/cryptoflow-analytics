@@ -15,17 +15,35 @@ description: |
 
   Data is used downstream in market regime detection, sentiment analysis, and momentum signal generation
   to provide sector-specific insights and cross-category performance comparisons.
+
+  Operational characteristics:
+  - Data size: ~35 records, minimal storage footprint (~1KB)
+  - Refresh pattern: Manual updates via CSV file modifications
+  - Growth expectations: Stable size, curated to top-tier cryptocurrencies only
+  - Performance: Excellent for joins due to small size and primary key constraints
+  - Data lineage: Seeds → raw layer → potential enrichment in staging/analytics layers
 connection: duckdb-default
 tags:
   - domain:crypto
+  - domain:finance
   - data_type:reference_data
   - data_type:dimension_table
+  - data_type:lookup_table
   - pipeline_role:raw
+  - pipeline_role:foundation
   - update_pattern:manual_seed
+  - update_pattern:static
+  - refresh_cadence:manual
   - sensitivity:public
+  - data_source:curated_seed
+  - record_count:35
+  - size_tier:small
+  - quality_tier:high
   - use_case:classification
   - use_case:portfolio_allocation
   - use_case:risk_management
+  - use_case:sector_analysis
+  - use_case:market_intelligence
 
 materialization:
   type: table
@@ -42,6 +60,11 @@ columns:
       These identifiers match the 'id' field from CoinGecko's /coins/markets API endpoint.
       Examples include 'bitcoin', 'ethereum', 'binancecoin'. All 35 values are unique
       and correspond to the most liquid cryptocurrencies by market cap and volume.
+
+      Semantic type: Primary identifier / Foreign key
+      Cardinality: 35 distinct values (100% unique)
+      Business context: Critical for data lineage and joins with market_data tables
+      Format: lowercase, hyphenated strings (e.g. 'avalanche-2', 'polygon-ecosystem-token')
     checks:
       - name: not_null
       - name: unique
@@ -54,6 +77,12 @@ columns:
       'Scaling', 'Storage', 'Interoperability', 'Oracle', 'Infrastructure', 'AI & Compute',
       'Exchange Token', and 'Store of Value'. Used for high-level sector analysis
       and cross-category performance comparison.
+
+      Semantic type: Categorical dimension / Business classification
+      Cardinality: 13 distinct values (~37% unique)
+      Business context: Primary grouping for portfolio allocation and risk assessment
+      Most common values: 'Smart Contract Platform' (14 coins), followed by 'DeFi', 'Meme'
+      Usage notes: Enables sector rotation strategies and category-based performance benchmarking
     checks:
       - name: not_null
   - name: subcategory
@@ -64,6 +93,13 @@ columns:
       'USD-Pegged', 'Decentralized Storage', 'GPU Network', etc. Enables fine-grained
       portfolio allocation and risk assessment. Some subcategories like 'Layer 1'
       appear across multiple categories (Smart Contract Platform, Store of Value).
+
+      Semantic type: Hierarchical dimension / Technical classification
+      Cardinality: 20 distinct values (~57% unique)
+      Business context: Technical specificity for detailed portfolio construction
+      Cross-category patterns: 'Layer 1' spans multiple categories (blockchain architecture)
+      Examples: 'Digital Gold', 'CEX', 'Cross-Border', 'DEX', 'Bitcoin L2', 'Solana Meme'
+      Usage notes: Critical for understanding technical infrastructure and ecosystem positioning
     checks:
       - name: not_null
 

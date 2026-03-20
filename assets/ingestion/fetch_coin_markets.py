@@ -24,16 +24,36 @@ description: |
   - Volatility and risk assessment
   - Market dominance tracking
   - Price prediction feature engineering
+
+  Operational characteristics:
+  - Daily refresh cadence aligned with CoinGecko's rate limits (free tier: 30 calls/minute)
+  - Full table replacement strategy ensures data consistency and simplifies lineage
+  - 30-second request timeout with error handling for API reliability
+  - Focused on top 100 coins to balance coverage with data quality and processing efficiency
+  - Feeds critical downstream analytics: stg.enriched_coins → momentum_signals, market_regime, volatility_analysis
 connection: duckdb-default
 tags:
   - domain:crypto_analytics
+  - domain:finance
   - data_source:coingecko_api
+  - data_type:market_data
+  - data_type:time_series
   - sensitivity:public
   - pipeline_role:raw
+  - pipeline_role:foundational
   - update_pattern:daily
   - refresh_type:full_replace
+  - refresh_cadence:daily_morning
   - record_count:100
   - api_endpoint:coins_markets
+  - lineage:feeds_staging
+  - lineage:feeds_analytics
+  - usage:momentum_analysis
+  - usage:market_sentiment
+  - usage:volatility_modeling
+  - usage:portfolio_benchmarking
+  - performance:api_rate_limited
+  - quality_tier:high
 
 materialization:
   type: table
@@ -51,7 +71,7 @@ columns:
       - name: unique
   - name: symbol
     type: VARCHAR
-    description: Coin ticker symbol (btc, eth...)
+    description: Cryptocurrency ticker symbol in lowercase format (btc, eth, ada) - standardized identifier used in trading pairs and market analysis
     checks:
       - name: not_null
   - name: current_price
@@ -67,12 +87,17 @@ columns:
       - name: positive
   - name: total_volume
     type: DOUBLE
-    description: 24h trading volume in USD
+    description: 24h trading volume in USD (critical liquidity indicator for downstream analytics)
+    checks:
+      - name: min
+        value: 0
   - name: market_cap_rank
     type: BIGINT
-    description: Rank by market cap
+    description: Market capitalization rank (1 = highest market cap) - critical for tier classification and momentum analysis weighting
     checks:
       - name: positive
+      - name: max
+        value: 100
   - name: ingested_at
     type: TIMESTAMP
     description: Ingestion timestamp (UTC)
@@ -199,6 +224,18 @@ custom_checks:
     query: |
       SELECT COUNT(*) = 0 FROM raw.coin_markets
       WHERE current_price > 1000000 OR current_price <= 0
+  - name: high_low_prices_consistent
+    value: 1
+    query: |
+      SELECT COUNT(*) = 0 FROM raw.coin_markets
+      WHERE high_24h < low_24h OR high_24h < current_price OR low_24h > current_price
+  - name: supply_economics_logical
+    value: 1
+    query: |-
+      SELECT COUNT(*) = 0 FROM raw.coin_markets
+      WHERE circulating_supply > max_supply
+        AND max_supply IS NOT NULL
+        AND max_supply > 0
 
 @bruin"""
 

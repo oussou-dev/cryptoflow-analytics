@@ -10,6 +10,13 @@ description: |
   The regime score is calculated using weighted market breadth (percentage of coins trending upward) and
   sentiment indicators, resulting in five distinct market states from STRONG_BEAR to STRONG_BULL. This
   single-row table serves as a foundational signal for portfolio allocation and risk management strategies.
+
+  Operational characteristics:
+  - Always contains exactly one row representing current market state
+  - Refreshes daily with latest market data from staging tables
+  - Used by downstream models for automated trading decisions and risk management
+  - Expected runtime: <30 seconds, processing ~50 coins with current market data
+  - Critical for real-time portfolio adjustment and institutional trading strategies
 tags:
   - domain:finance
   - domain:crypto
@@ -20,6 +27,11 @@ tags:
   - sensitivity:public
   - use_case:risk_management
   - use_case:portfolio_allocation
+  - classification:single_row_table
+  - computation:weighted_composite
+  - refresh_cadence:daily
+  - data_latency:near_realtime
+  - business_critical:high
 
 materialization:
   type: table
