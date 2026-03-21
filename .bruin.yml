@@ -5,5 +5,5 @@ environments:
     connections:
       duckdb:
         - name: "duckdb-default"
-          path: "md:cryptoflow_analytics"
+          path: "md:"
           token: "{{ env 'MOTHERDUCK_TOKEN' }}"
