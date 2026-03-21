@@ -22,7 +22,7 @@ description: |
   - Growth expectations: Stable size, curated to top-tier cryptocurrencies only
   - Performance: Excellent for joins due to small size and primary key constraints
   - Data lineage: Seeds → raw layer → potential enrichment in staging/analytics layers
-connection: duckdb-default
+connection: motherduck-default
 tags:
   - domain:crypto
   - domain:finance

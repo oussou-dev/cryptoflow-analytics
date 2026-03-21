@@ -2,6 +2,7 @@
 
 name: analytics.volatility_analysis
 type: duckdb.sql
+connection: motherduck-default
 description: |
   Comprehensive volatility analysis for the top 50 cryptocurrencies by market cap, calculating composite
   volatility scores across multiple timeframes (24h, 7d, 30d) and intraday spreads. The analysis produces

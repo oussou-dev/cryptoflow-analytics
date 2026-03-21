@@ -2,6 +2,7 @@
 
 name: stg.global_metrics
 type: duckdb.sql
+connection: motherduck-default
 description: |
   Staged global cryptocurrency market metrics with derived calculations and standardized data types for downstream analytics.
 

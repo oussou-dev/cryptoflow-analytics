@@ -2,6 +2,7 @@
 
 name: analytics.market_regime
 type: duckdb.sql
+connection: motherduck-default
 description: |
   Real-time cryptocurrency market regime detector that analyzes market breadth, sentiment, and global metrics
   to classify overall market conditions. Combines analysis of top 50 coins' price movements across multiple

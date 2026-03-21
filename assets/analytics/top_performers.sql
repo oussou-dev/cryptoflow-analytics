@@ -2,6 +2,7 @@
 
 name: analytics.top_performers
 type: duckdb.sql
+connection: motherduck-default
 description: |
   Identifies and ranks the top 10 gaining and losing cryptocurrencies across multiple timeframes (24h, 7d, 30d).
 

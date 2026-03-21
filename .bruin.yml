@@ -3,7 +3,7 @@ default_environment: default
 environments:
   default:
     connections:
-      duckdb:
-        - name: "duckdb-default"
-          path: "md:cryptoflow"
+      motherduck:
+        - name: "motherduck-default"
+          database: "cryptoflow"
           token: "{{ env 'MOTHERDUCK_TOKEN' }}"

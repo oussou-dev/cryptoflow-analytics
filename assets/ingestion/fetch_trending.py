@@ -28,7 +28,7 @@ description: |
   - Contrarian signal generation (high trending during market fear)
   - News event impact analysis and correlation studies
   - Portfolio diversification into emerging attention coins
-connection: duckdb-default
+connection: motherduck-default
 tags:
   - domain:crypto_analytics
   - data_source:coingecko_api

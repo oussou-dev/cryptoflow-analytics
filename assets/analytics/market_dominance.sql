@@ -2,6 +2,7 @@
 
 name: analytics.market_dominance
 type: duckdb.sql
+connection: motherduck-default
 description: |
   Cryptocurrency market dominance analysis providing comprehensive competitive intelligence through individual coin
   market share calculations and aggregated tier-level dominance metrics. This table transforms enriched market data
