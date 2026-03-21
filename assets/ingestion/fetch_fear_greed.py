@@ -191,14 +191,10 @@ custom_checks:
 import pandas as pd
 import requests
 from datetime import datetime, timezone
-import os
 
 
 def materialize():
     """Fetch 90 days of Fear & Greed Index from alternative.me API."""
-    # Force the token into the environment for Bruin Cloud workers
-    os.environ["MOTHERDUCK_TOKEN"] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im91c3NvdS5kZXYAZ21haWwuY29tIiwibWRSZWdpb24iOiJhd3MtZXUtY2VudHJhbC0xIiwic2Vzc2lvbiI6Im91c3NvdS5kZXYuZ21haWwuY29tIiwicGF0IjoiaTRvQkNPSWVQRHpNUVJxdWVXcktmdFNpcXFTd1gzNHpyX3dxamlBNDBWcyIsInVzZXJJZCI6IjNjMDIxMmQ2LTA1NzctNDc4OC05YmEzLTYxZGVlZjg0OTQxMyIsImlssiI6Im1kX3BhdCIsInJlYWRPbmx5IjpmYWxzZSwidG9rZW5UeXBlIjoicmVhZF93cml0ZSIsImlhdCI6MTc3NDAxNTA5MH0.3PT9baEZrETLZuBy9zgsEE1TSuYQloefYMqoMIuPemk"
-
     url = "https://api.alternative.me/fng/"
     params = {"limit": 90, "format": "json"}
 

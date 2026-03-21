@@ -111,8 +111,6 @@ import os
 
 def materialize():
     """Load coin categories from a seed CSV file."""
-    # Force the token into the environment for Bruin Cloud workers
-    os.environ["MOTHERDUCK_TOKEN"] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im91c3NvdS5kZXYAZ21haWwuY29tIiwibWRSZWdpb24iOiJhd3MtZXUtY2VudHJhbC0xIiwic2Vzc2lvbiI6Im91c3NvdS5kZXYuZ21haWwuY29tIiwicGF0IjoiRHplQUdMN1lsUFBqUmVKOVpoamdmSFc0NTdxTll4cS1CUWdFdU5ETFNHRSIsInVzZXJJZCI6IjNjMDIxMmQ2LTA1NzctNDc4OC05YmEzLTYxZGVlZjg0OTQxMyIsImlzcyI6Im1kX3BhdCIsInJlYWRPbmx5IjpmYWxzZSwidG9rZW5UeXBlIjoicmVhZF93cml0ZSIsImlhdCI6MTc3NDAzMTE0OH0.9VXt8xS55xnnbAGbKbbeJnvIYAGbTH7Ehw1hQk2B_7I"
     # The seeds folder is at the root, we can use the relative path
     # since bruin run happens at the project root.
     file_path = "seeds/coin_categories.csv"
