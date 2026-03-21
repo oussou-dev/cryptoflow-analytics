@@ -45,7 +45,7 @@ depends:
 columns:
   - name: analysis_date
     type: date
-    description: Date when the regime analysis was performed (CURRENT_DATE)
+    description: Date when the regime analysis was performed (CURRENT_DATE())
     checks:
       - name: not_null
   - name: regime
@@ -234,7 +234,7 @@ regime_calc AS (
 )
 
 SELECT
-    CURRENT_DATE AS analysis_date,
+    CURRENT_DATE() AS analysis_date,
 
     -- Regime classification
     CASE

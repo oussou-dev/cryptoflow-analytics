@@ -54,7 +54,7 @@ depends:
 columns:
   - name: analysis_date
     type: date
-    description: Date when the performance analysis was executed (CURRENT_DATE)
+    description: Date when the performance analysis was executed (CURRENT_DATE())
     checks:
       - name: not_null
   - name: id
@@ -248,7 +248,7 @@ all_performers AS (
 )
 
 SELECT
-    CURRENT_DATE AS analysis_date,
+    CURRENT_DATE() AS analysis_date,
     id,
     name,
     symbol,

@@ -225,7 +225,7 @@ trend_summary AS (
 )
 
 SELECT
-    CURRENT_DATE AS analysis_date,
+    CURRENT_DATE() AS analysis_date,
     za.sentiment_zone,
     za.days_count,
     za.avg_index_value,

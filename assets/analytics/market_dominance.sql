@@ -150,7 +150,7 @@ custom_checks:
 
 WITH coin_dominance AS (
     SELECT
-        CURRENT_DATE AS snapshot_date,
+        CURRENT_DATE() AS snapshot_date,
         id,
         name,
         symbol,

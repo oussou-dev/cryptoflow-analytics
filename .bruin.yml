@@ -3,6 +3,13 @@ default_environment: default
 environments:
   default:
     connections:
+      duckdb:
+        - name: "duckdb-default"
+          path: "crypto.db"
+        - name: "motherduck"
+          path: "md:cryptoflow"
+          token: "{{ env 'MOTHERDUCK_TOKEN' }}"
       google_cloud_platform:
         - name: "bigquery-default"
           service_account_file: "gcp-key.json"
+          project_id: "cryptoflow-p"

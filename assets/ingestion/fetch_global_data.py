@@ -149,13 +149,13 @@ custom_checks:
     value: 1
     query: |-
       SELECT COUNT(*) = 0 FROM raw.global_market
-      WHERE snapshot_date !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+      WHERE NOT REGEXP_CONTAINS(snapshot_date, r'^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
   - name: ingestion_timestamp_reasonable
     value: 1
     query: |-
       SELECT COUNT(*) = 0 FROM raw.global_market
-      WHERE ingested_at > CURRENT_TIMESTAMP
-        OR ingested_at < CURRENT_TIMESTAMP - INTERVAL '7 days'
+      WHERE ingested_at > CURRENT_TIMESTAMP()
+        OR ingested_at < CURRENT_TIMESTAMP() - INTERVAL 7 DAY
 
 @bruin"""
 

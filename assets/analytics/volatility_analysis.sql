@@ -46,7 +46,7 @@ depends:
 columns:
   - name: analysis_date
     type: date
-    description: Date when the volatility analysis was performed (CURRENT_DATE)
+    description: Date when the volatility analysis was performed (CURRENT_DATE())
     checks:
       - name: not_null
   - name: id
@@ -193,7 +193,7 @@ custom_checks:
 @bruin */
 
 SELECT
-    CURRENT_DATE AS analysis_date,
+    CURRENT_DATE() AS analysis_date,
     id,
     name,
     symbol,

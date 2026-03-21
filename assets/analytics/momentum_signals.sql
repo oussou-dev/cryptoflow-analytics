@@ -271,7 +271,7 @@ latest_fear_greed AS (
 )
 
 SELECT
-    CURRENT_DATE AS analysis_date,
+    CURRENT_DATE() AS analysis_date,
     pm.id,
     pm.name,
     pm.symbol,

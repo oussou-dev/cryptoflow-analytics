@@ -147,12 +147,12 @@ custom_checks:
     value: 1
     query: |
       SELECT COUNT(*) > 0 FROM raw.fear_greed_index
-      WHERE timestamp_date >= CURRENT_DATE - INTERVAL '3 days'
+      WHERE timestamp_date >= CURRENT_DATE() - INTERVAL 3 DAY
   - name: no_future_dates
     value: 1
     query: |
       SELECT COUNT(*) = 0 FROM raw.fear_greed_index
-      WHERE timestamp_date > CURRENT_DATE
+      WHERE timestamp_date > CURRENT_DATE()
   - name: temporal_ordering_consistency
     value: 1
     query: |

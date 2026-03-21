@@ -107,7 +107,7 @@ custom_checks:
     value: 1
     query: |
       SELECT COUNT(*) > 0 FROM raw.trending_coins
-      WHERE snapshot_date = CURRENT_DATE
+      WHERE CAST(snapshot_date AS DATE) = CURRENT_DATE()
   - name: high_scoring_coins_present
     value: 1
     query: |
