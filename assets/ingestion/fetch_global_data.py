@@ -170,8 +170,8 @@ import os
 
 def materialize():
     """Fetch global cryptocurrency market data from CoinGecko API."""
-    os.environ["MOTHERDUCK_TOKEN"] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im91c3NvdS5kZXZAZ21haWwuY29tIiwibWRSZWdpb24iOiJhd3MtZXUtY2VudHJhbC0xIiwic2Vzc2lvbiI6Im91c3NvdS5kZXYuZ21haWwuY29tIiwicGF0IjoiTzVlbVVmRHVUN3EtQWpTbHNlRzVLVTRKOGIyMmFPLU1EOE55ZFM1TjVZQSIsInVzZXJJZCI6IjNjMDIxMmQ2LTA1NzctNDc4OC05YmEzLTYxZGVlZjg0OTQxMyIsImlzcyI6Im1kX3BhdCIsInJlYWRPbmx5IjpmYWxzZSwidG9rZW5UeXBlIjoicmVhZF93cml0ZSIsImlhdCI6MTc3NDA5MTI0OX0.Vt9YpbUtF1cAquI65hYlsIXCz2dMksHBkFfKH6B1iOA"
 
+    url = "https://api.coingecko.com/api/v3/global"
     url = "https://api.coingecko.com/api/v3/global"
     headers = {"accept": "application/json"}
 

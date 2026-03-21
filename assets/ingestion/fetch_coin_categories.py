@@ -111,8 +111,8 @@ import os
 
 def materialize():
     """Load coin categories from a seed CSV file."""
-    os.environ["MOTHERDUCK_TOKEN"] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im91c3NvdS5kZXZAZ21haWwuY29tIiwibWRSZWdpb24iOiJhd3MtZXUtY2VudHJhbC0xIiwic2Vzc2lvbiI6Im91c3NvdS5kZXYuZ21haWwuY29tIiwicGF0IjoiTzVlbVVmRHVUN3EtQWpTbHNlRzVLVTRKOGIyMmFPLU1EOE55ZFM1TjVZQSIsInVzZXJJZCI6IjNjMDIxMmQ2LTA1NzctNDc4OC05YmEzLTYxZGVlZjg0OTQxMyIsImlzcyI6Im1kX3BhdCIsInJlYWRPbmx5IjpmYWxzZSwidG9rZW5UeXBlIjoicmVhZF93cml0ZSIsImlhdCI6MTc3NDA5MTI0OX0.Vt9YpbUtF1cAquI65hYlsIXCz2dMksHBkFfKH6B1iOA"
 
+    # The seeds folder is at the root, we can use the relative path
     # The seeds folder is at the root, we can use the relative path
     # since bruin run happens at the project root.
     file_path = "seeds/coin_categories.csv"
