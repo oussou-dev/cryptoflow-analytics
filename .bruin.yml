@@ -3,7 +3,6 @@ default_environment: default
 environments:
   default:
     connections:
-      motherduck:
-        - name: "motherduck-default"
-          database: "cryptoflow"
-          token: "{{ env 'MOTHERDUCK_TOKEN' }}"
+      google_cloud_platform:
+        - name: "bigquery-default"
+          credentials: "{{ env 'GCP_SERVICE_ACCOUNT_JSON' }}"

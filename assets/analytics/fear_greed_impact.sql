@@ -1,8 +1,8 @@
 /* @bruin
 
 name: analytics.fear_greed_impact
-type: duckdb.sql
-connection: motherduck-default
+type: bigquery.sql
+connection: bigquery-default
 description: |
   Cryptocurrency market sentiment analysis aggregated by psychological zones from the Fear & Greed Index.
 

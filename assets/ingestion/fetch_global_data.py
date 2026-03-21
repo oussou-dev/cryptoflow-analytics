@@ -22,7 +22,7 @@ description: |
 
   Key usage: Essential input for market regime classification, dominance trend analysis, and global market
   health monitoring. Downstream consumers include analytics.market_regime and analytics.market_dominance.
-connection: motherduck-default
+connection: bigquery-default
 tags:
   - domain:finance
   - domain:crypto

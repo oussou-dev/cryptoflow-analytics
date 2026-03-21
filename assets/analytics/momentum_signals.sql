@@ -1,8 +1,8 @@
 /* @bruin
 
 name: analytics.momentum_signals
-type: duckdb.sql
-connection: motherduck-default
+type: bigquery.sql
+connection: bigquery-default
 description: |
   Multi-timeframe momentum analysis with sentiment-enhanced trading signals for top 50 cryptocurrencies. Combines technical momentum indicators (24h/7d/30d price changes) with volume confirmation, ATH proximity analysis, and contrarian sentiment signals from Fear & Greed Index. Generates actionable buy/sell signals with confidence levels for systematic trading strategies. The momentum score ranges from -50 (strong bearish) to +100 (strong bullish), incorporating short-term momentum weighting, volume confirmation, and trend strength indicators. Contrarian approach: high momentum during extreme fear periods generates strongest buy signals.
 tags:

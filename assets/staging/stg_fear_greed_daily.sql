@@ -1,8 +1,8 @@
 /* @bruin
 
 name: stg.fear_greed_daily
-type: duckdb.sql
-connection: motherduck-default
+type: bigquery.sql
+connection: bigquery-default
 description: |
   Staged Fear & Greed Index data with calculated moving averages and sentiment zones for cryptocurrency market analysis.
 

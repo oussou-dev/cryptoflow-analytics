@@ -1,8 +1,8 @@
 /* @bruin
 
 name: stg.enriched_coins
-type: duckdb.sql
-connection: motherduck-default
+type: bigquery.sql
+connection: bigquery-default
 description: |
   Staging layer that enriches raw cryptocurrency market data with derived financial metrics and analytical features.
   This table transforms the CoinGecko API data by adding market cap tier classifications, liquidity indicators,

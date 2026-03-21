@@ -29,7 +29,7 @@ description: |
   Note: The API returns timestamps in Unix format which are converted to dates during ingestion. Original
   text classifications from the API are preserved alongside the numeric values for downstream analysis.
   The alternative.me service has proven reliable with >99% uptime based on historical observations.
-connection: motherduck-default
+connection: bigquery-default
 tags:
   - domain:finance
   - domain:crypto

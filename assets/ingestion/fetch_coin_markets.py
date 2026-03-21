@@ -31,7 +31,7 @@ description: |
   - 30-second request timeout with error handling for API reliability
   - Focused on top 100 coins to balance coverage with data quality and processing efficiency
   - Feeds critical downstream analytics: stg.enriched_coins → momentum_signals, market_regime, volatility_analysis
-connection: motherduck-default
+connection: bigquery-default
 tags:
   - domain:crypto_analytics
   - domain:finance
