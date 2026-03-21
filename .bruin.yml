@@ -5,4 +5,4 @@ environments:
     connections:
       google_cloud_platform:
         - name: "bigquery-default"
-          credentials: "{{ env 'GCP_SERVICE_ACCOUNT_JSON' }}"
+          service_account_file: "gcp-key.json"

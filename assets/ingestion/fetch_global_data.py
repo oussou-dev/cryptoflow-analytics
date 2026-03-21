@@ -45,9 +45,6 @@ tags:
 materialization:
   type: table
 
-secrets:
-  - key: duckdb-default
-    inject_as: duckdb-default
 
 columns:
   - name: total_market_cap_usd

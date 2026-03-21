@@ -44,9 +44,6 @@ tags:
 materialization:
   type: table
 
-secrets:
-  - key: duckdb-default
-    inject_as: duckdb-default
 
 columns:
   - name: coin_id

@@ -20,4 +20,6 @@ logs/*.log
 *.py[cod]
 
 bruin-cloud-deployment-workflow.md
-logs/queriesgcp-key.json
+logs/queries
+gcp-key.json
+
