@@ -1,7 +1,7 @@
 /* @bruin
 
 name: stg.enriched_coins
-type: bigquery.sql
+type: bq.sql
 connection: bigquery-default
 description: |
   Staging layer that enriches raw cryptocurrency market data with derived financial metrics and analytical features.

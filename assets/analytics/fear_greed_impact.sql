@@ -1,7 +1,7 @@
 /* @bruin
 
 name: analytics.fear_greed_impact
-type: bigquery.sql
+type: bq.sql
 connection: bigquery-default
 description: |
   Cryptocurrency market sentiment analysis aggregated by psychological zones from the Fear & Greed Index.

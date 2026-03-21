@@ -1,7 +1,7 @@
 /* @bruin
 
 name: analytics.market_regime
-type: bigquery.sql
+type: bq.sql
 connection: bigquery-default
 description: |
   Real-time cryptocurrency market regime detector that analyzes market breadth, sentiment, and global metrics

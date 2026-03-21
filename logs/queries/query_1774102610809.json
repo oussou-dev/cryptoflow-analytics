@@ -1,0 +1,8 @@
+{
+  "query": "CREATE DATABASE IF NOT EXISTS cryptoflow_analytics;",
+  "timestamp": "2026-03-21T15:16:50.809159986+01:00",
+  "connection": "duckdb-default",
+  "success": false,
+  "error": "Internal: Parser Error: syntax error at or near \"DATABASE\"\n\nLINE 1: CREATE DATABASE IF NOT EXISTS cryptoflow_analytics;\n               ^",
+  "timeout": 1000
+}

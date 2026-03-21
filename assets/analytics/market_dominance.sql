@@ -1,7 +1,7 @@
 /* @bruin
 
 name: analytics.market_dominance
-type: bigquery.sql
+type: bq.sql
 connection: bigquery-default
 description: |
   Cryptocurrency market dominance analysis providing comprehensive competitive intelligence through individual coin

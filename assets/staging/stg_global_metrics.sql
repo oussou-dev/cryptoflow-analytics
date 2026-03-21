@@ -1,7 +1,7 @@
 /* @bruin
 
 name: stg.global_metrics
-type: bigquery.sql
+type: bq.sql
 connection: bigquery-default
 description: |
   Staged global cryptocurrency market metrics with derived calculations and standardized data types for downstream analytics.

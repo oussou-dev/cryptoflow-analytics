@@ -1,7 +1,7 @@
 /* @bruin
 
 name: stg.fear_greed_daily
-type: bigquery.sql
+type: bq.sql
 connection: bigquery-default
 description: |
   Staged Fear & Greed Index data with calculated moving averages and sentiment zones for cryptocurrency market analysis.

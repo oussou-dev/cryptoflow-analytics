@@ -1,0 +1,15 @@
+{
+  "query": "SELECT count(*) FROM raw.coin_markets",
+  "timestamp": "2026-03-21T14:42:19.717654627+01:00",
+  "connection": "duckdb-default",
+  "success": true,
+  "columns": [
+    "count_star()"
+  ],
+  "rows": [
+    [
+      100
+    ]
+  ],
+  "timeout": 1000
+}

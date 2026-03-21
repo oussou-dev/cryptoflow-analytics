@@ -1,7 +1,7 @@
 /* @bruin
 
 name: analytics.volatility_analysis
-type: bigquery.sql
+type: bq.sql
 connection: bigquery-default
 description: |
   Comprehensive volatility analysis for the top 50 cryptocurrencies by market cap, calculating composite
