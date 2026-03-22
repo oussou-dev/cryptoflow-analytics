@@ -51,14 +51,14 @@ Crypto markets generate massive amounts of data across hundreds of exchanges, th
             ▼                     ▼                     ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │  🥉 BRONZE — Ingestion (raw.)                                       │
-│  ┌──────────────────-┐ ┌──────────────────┐ ┌─────────────────────┐ │
-│  │ fetch_coin_markets│ │ fetch_fear_greed │ │ coin_categories.csv │ │
-│  │ (Python asset)    │ │ (Python asset)   │ │ (Seed asset)        │ │
-│  └──────────────────-┘ └──────────────────┘ └─────────────────────┘ │
-│  ┌──────────────────┐ ┌──────────────────┐                          │
-│  │ fetch_global_data│ │ fetch_trending   │                          │
-│  │ (Python asset)   │ │ (Python asset)   │                          │
-│  └──────────────────┘ └──────────────────┘                          │
+│  ┌──────────────────┐ ┌──────────────────┐ ┌─────────────────────┐  │
+│  │ fetch_coin_markets│ │ fetch_fear_greed │ │ fetch_global_data   │  │
+│  │ (Python asset)   │ │ (Python asset)   │ │ (Python asset)      │  │
+│  └──────────────────┘ └──────────────────┘ └─────────────────────┘  │
+│  ┌──────────────────┐ ┌──────────────────────────────────────────┐   │
+│  │ fetch_trending   │ │ fetch_coin_categories                    │   │
+│  │ (Python asset)   │ │ (Python asset — reads seeds/categories)  │   │
+│  └──────────────────┘ └──────────────────────────────────────────┘   │
 └───────────────────────────────┬─────────────────────────────────────┘
                                 │
                                 ▼
@@ -173,8 +173,8 @@ The contrarian twist: a high momentum score combined with extreme fear produces 
 
 | Feature               | How It's Used                                                                              |
 | --------------------- | ------------------------------------------------------------------------------------------ |
-| **Python Assets**     | 4 ingestion scripts fetching from CoinGecko and Alternative.me APIs                        |
-| **SQL Assets**        | 6 DuckDB SQL transformations across staging and analytics layers                           |
+| **Python Assets**     | 5 ingestion scripts fetching from CoinGecko, Alternative.me APIs, and CSV seed        |
+| **SQL Assets**        | 9 BigQuery SQL transformations across staging (3) and analytics (6) layers             |
 | **Seed Assets**       | CSV-based reference data for coin categories                                               |
 | **Materialization**   | `table` strategy for all assets; `merge` for incremental ingestion                         |
 | **Dependencies**      | Explicit `depends` declarations creating a proper DAG                                      |
@@ -293,7 +293,7 @@ Every asset in the pipeline includes quality checks that run automatically after
 
 ```
 cryptoflow-analytics/
-├── .bruin.yml                              # Project config + DuckDB connection
+├── .bruin.yml                              # Project config + BigQuery connection
 ├── pipeline.yml                            # Daily schedule + start_date
 ├── glossary.yml                            # Bruin glossary with crypto terms
 ├── README.md
@@ -306,7 +306,7 @@ cryptoflow-analytics/
 │   │   ├── fetch_fear_greed.py             # 90d sentiment index
 │   │   ├── fetch_global_data.py            # Global market metrics
 │   │   ├── fetch_trending.py               # Trending coins
-│   │   └── coin_categories.asset.yml       # CSV seed reference
+│   │   └── fetch_coin_categories.py        # Seed loader: reads seeds/coin_categories.csv
 │   │
 │   ├── staging/                            # 🥈 SILVER — Cleaned & enriched
 │   │   ├── stg_enriched_coins.sql          # Tiers, ratios, spreads
@@ -322,10 +322,7 @@ cryptoflow-analytics/
 │       └── market_regime.sql              # Bull/Bear classifier
 │
 ├── seeds/
-│   └── coin_categories.csv                # DeFi, L1, L2, Meme categories
-│
-├── scripts/
-│   └── setup.sh                           # One-liner install
+│   └── coin_categories.csv                # DeFi, L1, L2, Meme categories (35 coins)
 │
 └── docs/
     └── ai_analyst_screenshots/            # Bruin AI analyst evidence
