@@ -96,9 +96,10 @@ columns:
     description: 30-day price change percentage (long-term momentum component)
   - name: volume_to_mcap_ratio
     type: float
-    description: 24h trading volume divided by market cap (liquidity/interest indicator). Higher ratios indicate more active trading relative to market size. Typical range 0.01-3.0, with values >1.0 suggesting high speculative interest.
+    description: 24h trading volume divided by market cap (liquidity/interest indicator). Can be 0 for coins with no recorded volume.
     checks:
-      - name: positive
+      - name: min
+        value: 0
       - name: max
         value: 10
   - name: distance_from_ath_pct

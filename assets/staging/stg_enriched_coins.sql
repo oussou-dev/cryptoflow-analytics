@@ -106,16 +106,14 @@ columns:
         value: 0
   - name: high_24h
     type: DOUBLE
-    description: Highest price reached in the last 24 hours (USD)
+    description: Highest price reached in the last 24 hours (USD), can be 0 for new/inactive coins
     checks:
       - name: not_null
-      - name: positive
   - name: low_24h
     type: DOUBLE
-    description: Lowest price reached in the last 24 hours (USD)
+    description: Lowest price reached in the last 24 hours (USD), can be 0 for new/inactive coins
     checks:
       - name: not_null
-      - name: positive
   - name: price_change_pct_24h
     type: DOUBLE
     description: Percentage price change over the last 24 hours (can be negative)
@@ -219,7 +217,7 @@ custom_checks:
     value: 1
     query: |
       SELECT COUNT(*) = 0 FROM stg.enriched_coins
-      WHERE high_24h < low_24h OR low_24h <= 0
+      WHERE high_24h < low_24h
   - name: supply_ratios_valid_range
     value: 1
     query: |

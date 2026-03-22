@@ -90,10 +90,9 @@ columns:
       - name: positive
   - name: intraday_spread_pct
     type: float
-    description: Intraday volatility measure calculated as (high_24h - low_24h) / low_24h * 100. Represents percentage spread between daily high and low prices. Typical ranges 0.5-15% for stable coins, 20-200%+ for highly volatile assets.
+    description: Intraday volatility measure calculated as (high_24h - low_24h) / low_24h * 100. Can be 0 for stablecoins.
     checks:
       - name: not_null
-      - name: positive
   - name: abs_change_24h
     type: float
     description: Absolute value of 24-hour price change percentage (magnitude of movement)
@@ -111,13 +110,9 @@ columns:
       - name: not_null
   - name: volatility_score
     type: float
-    description: |
-      Composite volatility metric combining multi-timeframe price movements with weighted averages.
-      Calculated as: (24h_change * 0.3) + (intraday_spread * 0.3) + (7d_change/7 * 0.2) + (30d_change/30 * 0.2).
-      Typical ranges: 0-2 (stable), 2-8 (moderate), 8-15 (high), >15 (ultra volatile). Used for position sizing and risk assessment.
+    description: Composite volatility metric. Can be 0 for stablecoins with no price movement.
     checks:
       - name: not_null
-      - name: positive
   - name: volatility_tier
     type: string
     description: Five-tier volatility classification based on composite scoring (>15=ultra_volatile, >8=high, >3=moderate, >1=low, <=1=stable)
@@ -137,13 +132,9 @@ columns:
       - name: not_null
   - name: volume_to_mcap_ratio
     type: float
-    description: |
-      Liquidity indicator calculated as 24-hour trading volume divided by market capitalization.
-      Higher ratios indicate more active trading relative to market size. Typical ranges: 0.01-0.1 (low activity),
-      0.1-0.3 (normal), 0.3-1.0 (elevated), >1.0 (abnormally high speculative interest).
+    description: Liquidity indicator. Can be 0 for coins with no recorded volume.
     checks:
       - name: not_null
-      - name: positive
   - name: volume_activity_level
     type: string
     description: Categorical volume activity classification based on volume-to-market-cap ratios

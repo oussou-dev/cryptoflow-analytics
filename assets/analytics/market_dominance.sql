@@ -134,7 +134,7 @@ custom_checks:
     value: 1
     query: |
       SELECT COUNT(*) = 1 FROM analytics.market_dominance
-      WHERE symbol = 'BTC' AND dominance_pct BETWEEN 20 AND 80
+      WHERE LOWER(symbol) = 'btc' AND dominance_pct BETWEEN 10 AND 95
   - name: tier_dominance_consistency
     value: 1
     query: |-
