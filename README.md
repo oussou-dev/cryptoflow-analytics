@@ -4,7 +4,7 @@
 
 [![Built with Bruin](https://img.shields.io/badge/Built%20with-Bruin-blue)](https://getbruin.com)
 [![Data Source](https://img.shields.io/badge/Data-CoinGecko%20API-green)](https://www.coingecko.com/en/api)
-[![DuckDB](https://img.shields.io/badge/Warehouse-DuckDB-yellow)](https://duckdb.org)
+[![BigQuery](https://img.shields.io/badge/Warehouse-BigQuery-4285F4?logo=google-cloud&logoColor=white)](https://cloud.google.com/bigquery)
 [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](LICENSE)
 
 > An end-to-end data pipeline that ingests multi-source crypto data, transforms it through a medallion architecture, and produces actionable market intelligence — including a **Market Regime Detector**, **Composite Momentum Signals**, and **Sentiment Analysis** — all orchestrated by [Bruin](https://getbruin.com).
@@ -113,7 +113,7 @@ Crypto markets generate massive amounts of data across hundreds of exchanges, th
 
 ### 🥉 Bronze — Raw Ingestion
 
-Raw data from external APIs, loaded as-is into DuckDB with an `ingested_at` timestamp. Python assets handle API calls, pagination, error handling, and return `pandas.DataFrame` objects that Bruin materializes as tables.
+Raw data from external APIs, loaded as-is into BigQuery with an `ingested_at` timestamp. Python assets handle API calls, pagination, error handling, and return `pandas.DataFrame` objects that Bruin materializes as tables.
 
 ### 🥈 Silver — Staging
 
@@ -194,23 +194,30 @@ The contrarian twist: a high momentum score combined with extreme fear produces 
 
 - [Bruin CLI](https://getbruin.com/docs/bruin/getting-started/introduction/installation.html) installed
 - Python 3.10+ with `pandas` and `requests`
+- A Google Cloud project with BigQuery enabled
+- A GCP Service Account with `BigQuery Data Editor` and `BigQuery Job User` roles
 - (Optional) [VS Code Bruin Extension](https://marketplace.visualstudio.com/items?itemName=bruin.bruin)
 
 ### Installation
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/YOUR_USERNAME/cryptoflow-analytics.git
+git clone https://github.com/oussou-dev/cryptoflow-analytics.git
 cd cryptoflow-analytics
 
-# 2. Run the setup script
-chmod +x scripts/setup.sh && ./scripts/setup.sh
+# 2. Set up your GCP credentials
+cp gcp-key.json.example gcp-key.json  # add your service account key
 
-# 3. Execute the full pipeline
+# 3. Create BigQuery datasets
+bq mk --dataset --location=US your-project:raw
+bq mk --dataset --location=US your-project:stg
+bq mk --dataset --location=US your-project:analytics
+
+# 4. Execute the full pipeline
 bruin run .
 ```
 
-That's it. Three commands. All data is stored locally in `crypto.db` (DuckDB).
+All data is stored in BigQuery under `raw`, `stg`, and `analytics` datasets.
 
 ### Verify the results
 
@@ -218,34 +225,44 @@ That's it. Three commands. All data is stored locally in `crypto.db` (DuckDB).
 # Check pipeline lineage
 bruin lineage .
 
-# Query the data directly
-duckdb crypto.db "SELECT regime, regime_score, regime_narrative FROM analytics.market_regime"
-duckdb crypto.db "SELECT name, signal, momentum_score FROM analytics.momentum_signals ORDER BY momentum_score DESC LIMIT 10"
+# Query via BigQuery console or bq CLI
+bq query --use_legacy_sql=false \
+  'SELECT regime, regime_score, regime_narrative FROM `your-project.analytics.market_regime`'
+
+bq query --use_legacy_sql=false \
+  'SELECT name, signal, momentum_score FROM `your-project.analytics.momentum_signals` ORDER BY momentum_score DESC LIMIT 10'
 ```
 
 ---
 
 ## 🤖 AI Analyst Insights
 
-After deploying to Bruin Cloud, the AI Data Analyst can answer questions conversationally about the entire pipeline output.
+Deployed on **Bruin Cloud**, the AI Data Analyst answers natural language questions about the entire pipeline output — no SQL required.
 
-### Sample Questions & Screenshots
+### Market Regime Analysis
+> *"What is the current market regime? Show me the regime classification, score, and narrative."*
 
-> **"Is the market currently in Bull or Bear territory?"**
+![Market Regime Analysis](docs/ai_analyst_screenshots/market_regime_analysis.png)
 
-*(screenshot: docs/ai_analyst_screenshots/market_regime.png)*
+### Top Momentum Signals
+> *"Show me the top 10 coins by momentum score with their BUY/SELL signal and confidence level."*
 
-> **"Which coins have the strongest buy signals right now?"**
+![Top Momentum Signals](docs/ai_analyst_screenshots/top_momentum_signals.png)
 
-*(screenshot: docs/ai_analyst_screenshots/momentum_signals.png)*
+### Market Dominance by Tier
+> *"Show me the market dominance breakdown by price tier. What % does mega-cap control?"*
 
-> **"How has market sentiment evolved over the last 30 days?"**
+![Market Dominance](docs/ai_analyst_screenshots/market_dominance.png)
 
-*(screenshot: docs/ai_analyst_screenshots/sentiment_trend.png)*
+### Top Performers (7-Day)
+> *"What are the top 5 biggest gainers and losers over the past 7 days?"*
 
-> **"Compare the volatility of Layer 1 coins vs Meme coins"**
+![Top Performers](docs/ai_analyst_screenshots/top_performers_7d.png)
 
-*(screenshot: docs/ai_analyst_screenshots/volatility_comparison.png)*
+### Sentiment Analysis (Fear & Greed)
+> *"How has market sentiment evolved recently? Show the distribution across sentiment zones."*
+
+![Sentiment vs Price](docs/ai_analyst_screenshots/sentiment-vs-price.png)
 
 ---
 
@@ -331,12 +348,13 @@ cryptoflow-analytics/
 
 The biggest win: **quality checks are embedded in the asset definition**, not in a separate tool. This means every change to a transformation automatically includes its quality contract. There's no "forgetting to update the test file."
 
-### Why DuckDB?
+### Why BigQuery?
 
-- Zero infrastructure: single file, no server
-- Analytical SQL that rivals BigQuery/Snowflake for local workloads
-- Perfect for hackathon scope — easy to reproduce, share, and demo
-- Seamless migration path to BigQuery via Bruin environments
+- Serverless, fully managed — zero infrastructure to maintain
+- Scales from kilobytes to petabytes with the same SQL
+- Native integration with Bruin Cloud for seamless deployment
+- Production-grade analytics with familiar SQL syntax
+- Free tier covers well beyond hackathon data volumes
 
 ### Why CoinGecko Free API?
 
