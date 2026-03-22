@@ -14,14 +14,8 @@ __pycache__/
 .venv/
 venv/
 .bruin-cache/
-.bruin.yml
 logs/runs
 logs/*.log
 *.py[cod]
-
-bruin-cloud-deployment-workflow.md
 logs/queries
 gcp-key.json
-git-commit-guide-v2.md
-ai-analyst-questions-playground.md
-crypto-pipeline-deployment-workflow.md
