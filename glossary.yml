@@ -1,0 +1,127 @@
+entities:
+
+  Cryptocurrency:
+    description: "A digital or virtual currency secured by cryptography, traded on centralized or decentralized exchanges. In this pipeline, data covers the top 100 cryptocurrencies by market capitalization."
+    attributes:
+      market_cap:
+        type: float
+        description: "Price × circulating supply in USD. Primary indicator of a coin's market size. Used to classify coins into price tiers (mega/large/mid/small/micro cap)."
+      total_volume:
+        type: float
+        description: "Total USD trading volume over the last 24 hours across all exchanges. High volume relative to market cap indicates active interest."
+      current_price:
+        type: float
+        description: "Current price in USD as reported by CoinGecko. Refreshed daily."
+      market_cap_rank:
+        type: integer
+        description: "CoinGecko ranking by market capitalization. Rank 1 = Bitcoin (highest market cap). This pipeline focuses on the top 50-100 coins."
+
+  PriceTier:
+    description: "Classification of cryptocurrencies by market capitalization, inspired by traditional equity market segmentation (large-cap, mid-cap, small-cap)."
+    attributes:
+      mega_cap:
+        type: string
+        description: "Market cap ≥ $100 billion USD. Typically Bitcoin and Ethereum. Most liquid, lowest volatility relative to the rest of the market."
+      large_cap:
+        type: string
+        description: "Market cap $10B–$100B USD. Established coins with significant institutional interest (e.g., BNB, SOL, XRP)."
+      mid_cap:
+        type: string
+        description: "Market cap $1B–$10B USD. Growing projects with meaningful liquidity but higher volatility than large-cap."
+      small_cap:
+        type: string
+        description: "Market cap $100M–$1B USD. Higher risk/reward profile, less institutional coverage."
+      micro_cap:
+        type: string
+        description: "Market cap < $100M USD. Speculative assets with highest volatility and lowest liquidity."
+
+  MarketRegime:
+    description: "Classification of the overall cryptocurrency market state based on composite indicators. A single-row analytical output refreshed daily, combining price breadth, sentiment, and global metrics."
+    attributes:
+      regime:
+        type: string
+        description: "Current market classification: STRONG_BULL | BULL | NEUTRAL | BEAR | STRONG_BEAR. Determined by the regime_score composite metric."
+      regime_score:
+        type: float
+        description: "Composite score from -100 (extreme bearish) to +100 (extreme bullish). Combines: market breadth (60% weight), Fear & Greed sentiment (20%), global market cap change (20%)."
+      regime_narrative:
+        type: string
+        description: "Human-readable English explanation of current market conditions, auto-generated based on the regime classification and key underlying indicators."
+
+  MomentumSignal:
+    description: "A trading signal for individual cryptocurrencies combining multi-timeframe price momentum with market sentiment. Generated for the top 50 coins by market cap."
+    attributes:
+      momentum_score:
+        type: float
+        description: "Composite score ranging from -50 (strong bearish) to +100 (strong bullish). Weighted combination of: 24h price change (max 20pts), 7d change (max 25pts), 30d change (max 25pts), volume confirmation (max 15pts), ATH proximity (max 15pts)."
+      signal:
+        type: string
+        description: "Actionable trading signal: STRONG_BUY | BUY | NEUTRAL | SELL | STRONG_SELL. Contrarian logic: high momentum + extreme fear (Fear & Greed < 30) = STRONG_BUY signal."
+      signal_confidence:
+        type: string
+        description: "Reliability of the signal based on absolute momentum score magnitude: HIGH (|score| > 50), MEDIUM (> 25), LOW (≤ 25)."
+
+  FearGreedIndex:
+    description: "A sentiment indicator published daily by Alternative.me (alternative.me/crypto/fear-and-greed-index/). Measures overall crypto market sentiment on a 0-100 scale."
+    attributes:
+      value:
+        type: integer
+        description: "Numeric sentiment score from 0 (Extreme Fear) to 100 (Extreme Greed). Historically, values < 20 represent strong buying opportunities (contrarian signal)."
+      value_classification:
+        type: string
+        description: "Textual zone: Extreme Fear (0-24) | Fear (25-44) | Neutral (45-55) | Greed (56-74) | Extreme Greed (75-100)."
+      ma_7d:
+        type: float
+        description: "7-day moving average of the Fear & Greed index. Smooths daily noise to reveal sentiment trends. Rising MA = improving sentiment."
+
+  VolatilityAnalysis:
+    description: "Risk metrics for the top 50 cryptocurrencies combining intraday price spreads and multi-timeframe absolute price movements into a composite volatility score and tier classification."
+    attributes:
+      volatility_score:
+        type: float
+        description: "Composite metric = (|24h_change| × 0.3) + (intraday_spread × 0.3) + (|7d_change|/7 × 0.2) + (|30d_change|/30 × 0.2). Typical ranges: 0-2 (stable), 2-8 (moderate), 8-15 (high), >15 (ultra-volatile)."
+      volatility_tier:
+        type: string
+        description: "Five-tier classification: stable | low | moderate | high | ultra_volatile. Based on volatility_score thresholds."
+      intraday_spread_pct:
+        type: float
+        description: "Intraday price range as a percentage: (high_24h - low_24h) / low_24h × 100. Measures daily price instability. Stablecoins typically < 0.5%, meme coins can exceed 30%."
+      volume_to_mcap_ratio:
+        type: float
+        description: "24h trading volume ÷ market cap. Liquidity proxy: > 0.5 = abnormally high interest, 0.2-0.5 = elevated, 0.05-0.2 = normal, < 0.05 = low activity."
+
+  MarketDominance:
+    description: "Market share analysis showing each coin's percentage of total market capitalization, plus aggregated tier-level dominance metrics."
+    attributes:
+      dominance_pct:
+        type: float
+        description: "Individual coin's share of total market cap: (coin_market_cap / sum_all_market_caps) × 100. Bitcoin historically ranges 35-70% depending on market cycle phase."
+      tier_dominance_pct:
+        type: float
+        description: "Combined market share of all coins in the same price tier. Mega-cap typically controls 70-85% of total crypto market cap."
+
+  ATH:
+    description: "All-Time High — the highest price a cryptocurrency has ever reached in USD since its trading inception on CoinGecko."
+    attributes:
+      ath:
+        type: float
+        description: "All-time high price in USD."
+      ath_change_percentage:
+        type: float
+        description: "Percentage change from ATH to current price. Always negative unless the coin is at ATH. Example: -65% means the coin is 65% below its peak."
+      distance_from_ath_pct:
+        type: float
+        description: "Same as ath_change_percentage (rounded). Used in momentum and volatility analysis. Coins near ATH (< -20%) often show stronger trend continuation."
+
+  SupplyMetrics:
+    description: "Economics of a coin's token supply — key for assessing inflation risk and long-term value preservation."
+    attributes:
+      circulating_supply:
+        type: float
+        description: "Number of tokens currently in public circulation and tradeable on exchanges."
+      max_supply:
+        type: float
+        description: "Hard cap on total tokens that will ever exist. NULL for inflationary tokens with no cap (e.g., Ethereum). Bitcoin = 21 million."
+      supply_ratio_pct:
+        type: float
+        description: "Circulating supply ÷ max supply × 100. High ratio = most tokens already issued (less future inflation risk). Bitcoin currently ~94% issued."

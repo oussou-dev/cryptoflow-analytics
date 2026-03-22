@@ -19,3 +19,10 @@ logs/*.log
 *.py[cod]
 logs/queries
 gcp-key.json
+
+
+ai-analyst-questions.md
+bruin-cloud-deployment-walkthrough.md
+crypto-pipeline-hackathon-plan.md
+git-commit-guide-v2.md
+.bruin.yml
